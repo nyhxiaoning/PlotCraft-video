@@ -4,6 +4,7 @@
  */
 
 export * from './video';
+export * from './script';
 
 /**
  * Section Map (for domain split preparation)
@@ -11,7 +12,7 @@ export * from './video';
  * Group 1: AI Model Types     - Lines 8-63
  * Group 2: AI Core Types      - Lines 65-161
  * Group 3: Video Types        - Lines 163-254
- * Group 4: Script Types       - Lines 255-386
+ * Group 4: Script Types       - Lines 255-386 (extracted to script.ts)
  * Group 5: Project Types      - Lines 290-363
  * Group 6: Novel Types        - Lines 463-722
  * Group 7: Composition Types  - Lines 724-859
@@ -218,40 +219,45 @@ export * from './ai.core';
 //   createdAt: string;
 // }
 
-export interface ScriptSegment {
-  id: string;
-  startTime: number;
-  endTime: number;
-  content: string;
-  type: 'narration' | 'dialogue' | 'action' | 'transition';
-  notes?: string;
-}
+// ========== Script Types (extracted to script.ts) ==========
 
-export interface ScriptMetadata {
-  style: string;
-  tone: string;
-  length: 'short' | 'medium' | 'long';
-  targetAudience: string;
-  language: string;
-  wordCount: number;
-  estimatedDuration: number;
-  generatedBy: string;
-  generatedAt: string;
-  template?: string;
-  templateName?: string;
-}
+// Original types commented out - moved to script.ts
+// export interface ScriptSegment {
+//   id: string;
+//   startTime: number;
+//   endTime: number;
+//   content: string;
+//   type: 'narration' | 'dialogue' | 'action' | 'transition';
+//   notes?: string;
+// }
 
-export interface Script {
-  id: string;
-  title: string;
-  content: string;
-  segments: ScriptSegment[];
-  metadata?: ScriptMetadata;
-  createdAt: string;
-  updatedAt: string;
-  videoId?: string;
-  modelUsed?: string;
-}
+// export interface ScriptMetadata {
+//   style: string;
+//   tone: string;
+//   length: 'short' | 'medium' | 'long';
+//   targetAudience: string;
+//   language: string;
+//   wordCount: number;
+//   estimatedDuration: number;
+//   generatedBy: string;
+//   generatedAt: string;
+//   template?: string;
+//   templateName?: string;
+// }
+
+// export interface Script {
+//   id: string;
+//   title: string;
+//   content: string;
+//   segments: ScriptSegment[];
+//   metadata?: ScriptMetadata;
+//   createdAt: string;
+//   updatedAt: string;
+//   videoId?: string;
+//   modelUsed?: string;
+// }
+
+// Original Script interface commented out - moved to script.ts
 
 export interface Project {
   id: string;
