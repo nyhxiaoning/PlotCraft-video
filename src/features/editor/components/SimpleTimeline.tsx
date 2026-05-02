@@ -234,6 +234,9 @@ const SimpleTimeline: React.FC<SimpleTimelineProps> = ({
             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleTimelineClick(e as unknown as React.KeyboardEvent<HTMLDivElement>); }}
             role="slider"
             aria-label="Timeline tracks"
+            aria-valuenow={currentTime}
+            aria-valuemin={0}
+            aria-valuemax={duration || 100}
             tabIndex={0}
             style={{ background: 'none', border: 'none', padding: 0, cursor: 'default', textAlign: 'left', width: '100%', display: 'block' }}
           >
