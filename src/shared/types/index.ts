@@ -3,6 +3,19 @@
  * Consolidated type definitions from src/types and src/core/types
  */
 
+/**
+ * Section Map (for domain split preparation)
+ * =========================================
+ * Group 1: AI Model Types     - Lines 8-63
+ * Group 2: AI Core Types      - Lines 65-161
+ * Group 3: Video Types        - Lines 163-254
+ * Group 4: Script Types       - Lines 255-386
+ * Group 5: Project Types      - Lines 290-363
+ * Group 6: Novel Types        - Lines 463-722
+ * Group 7: Composition Types  - Lines 724-859
+ * Group 8: Legacy Types       - Lines 861-918
+ */
+
 // CSS Module type declarations are in src/types/cssmodule.d.ts
 
 // ========== AI Model Types ==========
