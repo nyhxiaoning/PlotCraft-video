@@ -152,6 +152,8 @@ describe('voice-synthesis-pipeline', () => {
           generatedAt: Date.now(),
           ttsEngine: 'edge-tts',
           voiceCount: 2,
+          synthesizedCount: 0,
+          failedCount: 0,
         },
       };
 

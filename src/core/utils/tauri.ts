@@ -4,6 +4,7 @@
  */
 import { open } from '@tauri-apps/plugin-dialog';
 import * as fs from '@tauri-apps/plugin-fs';
+
 import { logger } from './logger';
 
 export const selectFile = async (options: {

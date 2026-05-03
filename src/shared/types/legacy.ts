@@ -3,8 +3,8 @@
  * Extracted from src/shared/types/index.ts (lines 841-893)
  */
 
-import type { AIModelType } from './ai.models';
 import type { AIModelSettings } from './ai.core';
+import type { AIModelType } from './ai.models';
 
 export interface AppSettings {
   autoSave: boolean;

@@ -148,7 +148,7 @@ describe('Project Store', () => {
       addScript(project.id, script);
 
       const updated = useProjectStore.getState().projects.find(p => p.id === project.id);
-      expect(updated?.scripts.length).toBe(1);
+      expect(updated?.scripts?.length).toBe(1);
     });
   });
 
@@ -174,7 +174,7 @@ describe('Project Store', () => {
       addVideo(project.id, video);
 
       const updated = useProjectStore.getState().projects.find(p => p.id === project.id);
-      expect(updated?.videos.length).toBe(1);
+      expect(updated?.videos?.length).toBe(1);
     });
   });
 });

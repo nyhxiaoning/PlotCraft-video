@@ -13,5 +13,5 @@ export interface CharacterCard {
   voiceSuggestion: string;
   relationships: { name: string; type: string }[];
   firstAppearance: string;
-  assetReferences: AssetReference[];
+  assetReferences?: AssetReference[];
 }
