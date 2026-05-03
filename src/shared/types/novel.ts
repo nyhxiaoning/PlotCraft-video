@@ -4,6 +4,13 @@
  * Novel/script analysis and processing types
  */
 
+import type {
+  CharacterAppearance,
+  ClothingItem,
+  CharacterExpression,
+  CharacterConsistency,
+} from './composition';
+
 export enum EmotionType {
   HAPPY = 'happy',
   SAD = 'sad',

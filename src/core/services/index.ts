@@ -12,7 +12,7 @@ export type { LipSyncOptions, LipSyncResult, TalkingFaceOptions, TalkingFaceResu
 
 // 视频合成服务
 export { videoCompositorService, default as VideoCompositorService } from './video-compositor.service';
-export type { Scene, SubtitleTrack as VideoSubtitleTrack, Subtitle as VideoSubtitle, BackgroundMusic, CompositionOptions, CompositionResult, ExportProgress as VideoExportProgress } from './video-compositor.service';
+export type { Scene, SubtitleTrack as VideoSubtitleTrack, Subtitle as VideoSubtitle, BackgroundMusic, CompositionOptions, CompositionResult, ExportProgress as VideoExportProgress } from './ffmpeg-wasm.service';
 
 // FFmpeg.wasm 服务
 export { ffmpegWasmService, default as FFmpegWasmService, loadFFmpeg, isFFmpegWasmAvailable } from './ffmpeg-wasm.service';
