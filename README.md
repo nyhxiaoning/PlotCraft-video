@@ -12,7 +12,7 @@
 
 <div align="center">
 
-[![Version](https://img.shields.io/badge/Version-3.0.0-FF6B35?style=flat-square&logo=package&logoColor=white)](https://github.com/Agions/PanelFlow/releases)
+[![Version](https://img.shields.io/badge/Version-1.0.0-FF6B35?style=flat-square&logo=package&logoColor=white)](https://github.com/Agions/PanelFlow/releases)
 [![Node.js](https://img.shields.io/badge/Node.js-18+-339933?style=flat-square&logo=nodedotjs&logoColor=white)](https://nodejs.org)
 [![npm](https://img.shields.io/badge/npm-9+-CB3837?style=flat-square&logo=npm&logoColor=white)](https://npmjs.com)
 [![Coverage](https://img.shields.io/badge/Coverage-70%25-45B8AC?style=flat-square&logo=checkmarx&logoColor=white)](https://github.com/Agions/PanelFlow/actions)
@@ -31,16 +31,16 @@
 
 ## ✨ 八大核心功能
 
-| 功能 | 描述 |
-|:---:|------|
-| 📥 **智能导入** | 小说/剧本/提示词，自动编码检测，智能章节切分 |
-| 🤖 **多模型AI** | 7+ 模型支持，文字/图像/语音，按需切换模型 |
-| 🎬 **智能分镜** | AI自动生成，多比例支持，可视化编辑 |
-| 🎭 **角色一致性** | 种子机制，参考图锁定，批量零走样 |
-| 👄 **唇形同步** | TTS语音对齐，多语言支持，情感语气调节 |
-| ⚡ **可视化工作流** | 类n8n引擎，拖拽连接，条件分支循环 |
-| 🖼️ **批量渲染** | 多模型并行，引擎/光照/调色，2K直出+AI 4K |
-| 📤 **一键导出** | 多格式支持，画质可配置，自动化合成 |
+|        功能         | 描述                                         |
+| :-----------------: | -------------------------------------------- |
+|   📥 **智能导入**   | 小说/剧本/提示词，自动编码检测，智能章节切分 |
+|   🤖 **多模型AI**   | 7+ 模型支持，文字/图像/语音，按需切换模型    |
+|   🎬 **智能分镜**   | AI自动生成，多比例支持，可视化编辑           |
+|  🎭 **角色一致性**  | 种子机制，参考图锁定，批量零走样             |
+|   👄 **唇形同步**   | TTS语音对齐，多语言支持，情感语气调节        |
+| ⚡ **可视化工作流** | 类n8n引擎，拖拽连接，条件分支循环            |
+|   🖼️ **批量渲染**   | 多模型并行，引擎/光照/调色，2K直出+AI 4K     |
+|   📤 **一键导出**   | 多格式支持，画质可配置，自动化合成           |
 
 ---
 
@@ -61,16 +61,16 @@
                📤 导出
 ```
 
-| 步骤 | 功能 | 关键配置 |
-|:---:|------|----------|
-| 📥 导入 | 小说/剧本/提示词 | 编码检测、智能分章 |
-| 🧠 AI分析 | 识别章节结构、角色、场景 | 多模型并行 |
-| 📝 脚本生成 | AI生成结构化视频脚本 | 模型选择、集数配置 |
-| 🎬 分镜设计 | 自动生成分镜图 | 比例、分辨率 |
-| 🎭 角色设计 | AI创建角色保持一致 | 风格、一致性强度 |
-| 🖼️ 批量渲染 | 多模型并行渲染场景 | 引擎、光照、调色 |
-| 🎞️ 合成视频 | 合成轨道编辑、镜头拼接 | 转场、时长 |
-| 📤 导出 | 一键合成视频 | 格式、画质 |
+|    步骤     | 功能                     | 关键配置           |
+| :---------: | ------------------------ | ------------------ |
+|   📥 导入   | 小说/剧本/提示词         | 编码检测、智能分章 |
+|  🧠 AI分析  | 识别章节结构、角色、场景 | 多模型并行         |
+| 📝 脚本生成 | AI生成结构化视频脚本     | 模型选择、集数配置 |
+| 🎬 分镜设计 | 自动生成分镜图           | 比例、分辨率       |
+| 🎭 角色设计 | AI创建角色保持一致       | 风格、一致性强度   |
+| 🖼️ 批量渲染 | 多模型并行渲染场景       | 引擎、光照、调色   |
+| 🎞️ 合成视频 | 合成轨道编辑、镜头拼接   | 转场、时长         |
+|   📤 导出   | 一键合成视频             | 格式、画质         |
 
 ---
 
@@ -145,16 +145,16 @@ npm run tauri build
 
 ## 🛠️ 技术栈
 
-| 类别 | 技术 |
-|:---:|------|
+|     类别     | 技术                           |
+| :----------: | ------------------------------ |
 | **前端框架** | React 18 · TypeScript 5 · Vite |
-| **UI 组件** | Ant Design 5 · CSS Modules |
-| **状态管理** | Zustand |
-| **动画** | Framer Motion |
-| **桌面端** | Tauri 2.0 (Rust) |
-| **国际化** | i18next |
-| **测试** | Jest · Vitest |
-| **文档** | VitePress |
+| **UI 组件**  | Ant Design 5 · CSS Modules     |
+| **状态管理** | Zustand                        |
+|   **动画**   | Framer Motion                  |
+|  **桌面端**  | Tauri 2.0 (Rust)               |
+|  **国际化**  | i18next                        |
+|   **测试**   | Jest · Vitest                  |
+|   **文档**   | VitePress                      |
 
 ---
 
@@ -162,39 +162,39 @@ npm run tauri build
 
 ### 文字生成
 
-| 提供商 | 模型 | 发布日期 |
-|-------|------|----------|
-| 智谱 | GLM-5 | 2026年2月 |
-| MiniMax | M2.5 | 2026年2月 |
-| 月之暗面 | Kimi K2.5 | 2026年 |
-| 字节跳动 | Doubao 2.0 | 2026年 |
-| 阿里云 | Qwen 2.5 | 2026年 |
-| 百度 | ERNIE 4.0 | 2026年 |
+| 提供商   | 模型       | 发布日期  |
+| -------- | ---------- | --------- |
+| 智谱     | GLM-5      | 2026年2月 |
+| MiniMax  | M2.5       | 2026年2月 |
+| 月之暗面 | Kimi K2.5  | 2026年    |
+| 字节跳动 | Doubao 2.0 | 2026年    |
+| 阿里云   | Qwen 2.5   | 2026年    |
+| 百度     | ERNIE 4.0  | 2026年    |
 
 ### 图像生成
 
-| 提供商 | 模型 | 特性 | 发布日期 |
-|-------|------|------|----------|
+| 提供商   | 模型         | 特性              | 发布日期      |
+| -------- | ------------ | ----------------- | ------------- |
 | 字节跳动 | Seedream 5.0 | 2K直出、AI 4K增强 | 2026年2月10日 |
-| 快手 | Kling 1.6 | 图像+视频生成 | 2026年 |
-| 生数科技 | Vidu 2.0 | 图像+视频生成 | 2026年 |
+| 快手     | Kling 1.6    | 图像+视频生成     | 2026年        |
+| 生数科技 | Vidu 2.0     | 图像+视频生成     | 2026年        |
 
 ### 视频生成
 
-| 提供商 | 模型 | 特性 | 发布日期 |
-|-------|------|------|----------|
+| 提供商   | 模型         | 特性                     | 发布日期      |
+| -------- | ------------ | ------------------------ | ------------- |
 | 字节跳动 | Seedance 2.0 | 文/图/视频输入、镜头一致 | 2026年2月12日 |
-| 快手 | Kling 1.6 | AI视频生成 | 2026年 |
-| 生数科技 | Vidu 2.0 | AI视频生成 | 2026年 |
+| 快手     | Kling 1.6    | AI视频生成               | 2026年        |
+| 生数科技 | Vidu 2.0     | AI视频生成               | 2026年        |
 
 ### 语音合成
 
-| 提供商 | 模型/服务 | 特性 |
-|-------|----------|------|
-| 阿里云 | CosyVoice 2.0 | 开源、3秒克隆、方言/情感支持 |
-| 阿里云 | KAN-TTS | 神经网络、多语言 |
-| 百度 | TTS | 中文优化 |
-| 科大讯飞 | TTS | 多语言支持 |
+| 提供商   | 模型/服务     | 特性                         |
+| -------- | ------------- | ---------------------------- |
+| 阿里云   | CosyVoice 2.0 | 开源、3秒克隆、方言/情感支持 |
+| 阿里云   | KAN-TTS       | 神经网络、多语言             |
+| 百度     | TTS           | 中文优化                     |
+| 科大讯飞 | TTS           | 多语言支持                   |
 
 ---
 
@@ -217,13 +217,13 @@ PanelFlow/
 
 ## 📚 文档
 
-| 文档 | 说明 |
-|:---|:---|
-| [🚀 快速开始](https://agions.github.io/PanelFlow/getting-started/quick-start) | 5分钟快速上手 |
-| [📖 用户指南](https://agions.github.io/PanelFlow/user-guide/workflow-overview) | 完整工作流程 |
-| [🔧 开发指南](https://agions.github.io/PanelFlow/developer-guide/architecture) | 架构与开发 |
-| [📡 API参考](https://agions.github.io/PanelFlow/api/overview) | API文档 |
-| [🚢 部署指南](https://agions.github.io/PanelFlow/deployment/build) | 构建与部署 |
+| 文档                                                                           | 说明          |
+| :----------------------------------------------------------------------------- | :------------ |
+| [🚀 快速开始](https://agions.github.io/PanelFlow/getting-started/quick-start)  | 5分钟快速上手 |
+| [📖 用户指南](https://agions.github.io/PanelFlow/user-guide/workflow-overview) | 完整工作流程  |
+| [🔧 开发指南](https://agions.github.io/PanelFlow/developer-guide/architecture) | 架构与开发    |
+| [📡 API参考](https://agions.github.io/PanelFlow/api/overview)                  | API文档       |
+| [🚢 部署指南](https://agions.github.io/PanelFlow/deployment/build)             | 构建与部署    |
 
 ---
 

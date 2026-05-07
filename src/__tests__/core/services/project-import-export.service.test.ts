@@ -11,7 +11,9 @@ jest.mock('uuid', () => ({
   v4: jest.fn(() => `mock-uuid-${++uuidCounter}`),
 }));
 
-const resetUuidCounter = () => { uuidCounter = 0; };
+const resetUuidCounter = () => {
+  uuidCounter = 0;
+};
 
 describe('ProjectImportExportService', () => {
   // Sample project data for testing
@@ -69,7 +71,7 @@ describe('ProjectImportExportService', () => {
 
       expect(typeof result).toBe('string');
       const parsed = JSON.parse(result);
-      expect(parsed.version).toBe('2.0.0');
+      expect(parsed.version).toBe('1.0.0');
       expect(parsed.project.name).toBe('测试项目');
       expect(parsed.metadata.format).toBe('json');
       expect(parsed.metadata.includesMedia).toBe(false);
@@ -77,7 +79,9 @@ describe('ProjectImportExportService', () => {
 
     it('should include media flag based on options', () => {
       const project = createMockProject();
-      const resultWithMedia = projectImportExportService.exportToJSON(project, { includeMedia: true });
+      const resultWithMedia = projectImportExportService.exportToJSON(project, {
+        includeMedia: true,
+      });
       const parsedWithMedia = JSON.parse(resultWithMedia);
       expect(parsedWithMedia.metadata.includesMedia).toBe(true);
     });
@@ -147,9 +151,9 @@ describe('ProjectImportExportService', () => {
     });
 
     it('should throw error for invalid JSON string', async () => {
-      await expect(
-        projectImportExportService.importProject('not valid json {')
-      ).rejects.toThrow('无效的项目文件格式');
+      await expect(projectImportExportService.importProject('not valid json {')).rejects.toThrow(
+        '无效的项目文件格式'
+      );
     });
 
     // Skipped: JSDOM File.text() not natively supported
@@ -167,9 +171,9 @@ describe('ProjectImportExportService', () => {
     it.skip('should throw error for invalid File object', async () => {
       const file = new File(['invalid json {'], 'test.json', { type: 'application/json' });
 
-      await expect(
-        projectImportExportService.importProject(file)
-      ).rejects.toThrow('无效的项目文件格式');
+      await expect(projectImportExportService.importProject(file)).rejects.toThrow(
+        '无效的项目文件格式'
+      );
     });
 
     it('should throw error for unsupported version', async () => {
@@ -180,9 +184,9 @@ describe('ProjectImportExportService', () => {
         metadata: { appVersion: '0.1.0', format: 'json', includesMedia: false },
       });
 
-      await expect(
-        projectImportExportService.importProject(invalidVersionData)
-      ).rejects.toThrow(/版本.*不被支持/);
+      await expect(projectImportExportService.importProject(invalidVersionData)).rejects.toThrow(
+        /版本.*不被支持/
+      );
     });
 
     it('should skip validation when validate is false', async () => {
@@ -195,7 +199,9 @@ describe('ProjectImportExportService', () => {
         metadata: { appVersion: '0.9.0', format: 'json', includesMedia: false },
       });
 
-      const imported = await projectImportExportService.importProject(exportData, { validate: false });
+      const imported = await projectImportExportService.importProject(exportData, {
+        validate: false,
+      });
       expect(imported.name).toBe(project.name);
     });
 
