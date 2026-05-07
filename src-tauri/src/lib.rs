@@ -611,13 +611,13 @@ pub fn run() {
     info!("ManGa AI 启动中...");
 
     tauri::Builder::default()
-        .plugin(tauri_plugin_fs::Builder::default().build())
-        .plugin(tauri_plugin_dialog::Builder::default().build())
-        .plugin(tauri_plugin_notification::Builder::default().build())
-        .plugin(tauri_plugin_clipboard_manager::Builder::default().build())
-        .plugin(tauri_plugin_shell::Builder::default().build())
-        .plugin(tauri_plugin_global_shortcut::Builder::default().build())
-        .plugin(tauri_plugin_os::Builder::default().build())
+        .plugin(tauri_plugin_fs::Builder::new("fs").build())
+        .plugin(tauri_plugin_dialog::Builder::new("dialog").build())
+        .plugin(tauri_plugin_notification::Builder::new("notification").build())
+        .plugin(tauri_plugin_clipboard_manager::Builder::new("clipboard-manager").build())
+        .plugin(tauri_plugin_shell::Builder::new("shell").build())
+        .plugin(tauri_plugin_global_shortcut::Builder::new("global-shortcut").build())
+        .plugin(tauri_plugin_os::Builder::new("os").build())
         .setup(|_app| {
             info!("应用程序初始化完成");
             Ok(())
