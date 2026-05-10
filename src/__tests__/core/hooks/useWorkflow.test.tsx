@@ -233,30 +233,32 @@ describe('useWorkflow Hook', () => {
     it('应该返回唯一性检查结果', async () => {
       const { result } = renderHook(() => useWorkflow());
 
-      let uniquenessResult: { isUnique: boolean; duplicates: unknown[]; suggestions: unknown[] } | null = null;
+      type UniquenessResult = { isUnique: boolean; duplicates: unknown[]; suggestions: unknown[] };
+      let uniquenessResult: UniquenessResult | null = null as UniquenessResult | null;
       await act(async () => {
         uniquenessResult = await result.current.ensureUniqueness('test content');
       });
 
       expect(uniquenessResult).not.toBeNull();
-      expect(uniquenessResult?.isUnique).toBe(true);
-      expect(uniquenessResult?.duplicates).toEqual([]);
-      expect(uniquenessResult?.suggestions).toEqual([]);
+      expect((uniquenessResult as UniquenessResult)?.isUnique).toBe(true);
+      expect((uniquenessResult as UniquenessResult)?.duplicates).toEqual([]);
+      expect((uniquenessResult as UniquenessResult)?.suggestions).toEqual([]);
     });
 
     it('应该接受任意字符串内容', async () => {
       const { result } = renderHook(() => useWorkflow());
 
-      let result1: { isUnique: boolean } | null = null;
-      let result2: { isUnique: boolean } | null = null;
+      type UniqueCheckResult = { isUnique: boolean };
+      let result1: UniqueCheckResult | null = null as UniqueCheckResult | null;
+      let result2: UniqueCheckResult | null = null as UniqueCheckResult | null;
 
       await act(async () => {
         result1 = await result.current.ensureUniqueness('content 1');
         result2 = await result.current.ensureUniqueness('content 2');
       });
 
-      expect(result1?.isUnique).toBe(true);
-      expect(result2?.isUnique).toBe(true);
+      expect((result1 as UniqueCheckResult)?.isUnique).toBe(true);
+      expect((result2 as UniqueCheckResult)?.isUnique).toBe(true);
     });
   });
 

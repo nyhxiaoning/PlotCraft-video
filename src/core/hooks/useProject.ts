@@ -292,11 +292,16 @@ export function useProject(_projectId?: string): UseProjectReturn {
 export function useProjectList() {
   const [projects, setProjects] = useState<ProjectData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [filter, setFilter] = useState({
+  const [filter, setFilter] = useState<{
+    search: string;
+    status: string[];
+    sortBy: keyof ProjectData;
+    sortOrder: 'asc' | 'desc';
+  }>({
     search: '',
-    status: [] as string[],
-    sortBy: 'updatedAt' as const,
-    sortOrder: 'desc' as 'asc' | 'desc'
+    status: [],
+    sortBy: 'updatedAt',
+    sortOrder: 'desc'
   });
   
   // 加载项目列表

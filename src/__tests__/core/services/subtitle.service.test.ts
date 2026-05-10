@@ -33,8 +33,8 @@ describe('SubtitleService', () => {
   describe('generateFromScript', () => {
     it('should generate subtitle track from script segments', () => {
       const segments: ScriptSegment[] = [
-        { id: 'seg1', content: '第一句台词', startTime: 0, endTime: 3 },
-        { id: 'seg2', content: '第二句台词', startTime: 3, endTime: 6 },
+        { id: 'seg1', content: '第一句台词', startTime: 0, endTime: 3, type: 'dialogue' as const },
+        { id: 'seg2', content: '第二句台词', startTime: 3, endTime: 6, type: 'dialogue' as const },
       ];
 
       const track = subtitleService.generateFromScript(segments);

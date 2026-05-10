@@ -24,7 +24,8 @@ import {
 
 // Mock axios
 jest.mock('axios');
-const mockedAxios = axios as jest.Mocked<typeof axios>;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mockedAxios = axios as any;
 
 // Mock storage service
 jest.mock('@/shared/services/storage', () => ({

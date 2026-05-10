@@ -12,6 +12,7 @@ jest.mock('@/core/utils/logger');
 jest.mock('@/core/config/optimization.config');
 
 import { useSmartModel } from '@/core/hooks/useSmartModel';
+import type { SmartGenerateResult } from '@/core/hooks/useSmartModel';
 import { aiService } from '@/core/services/ai.service';
 import { costService } from '@/core/services/cost.service';
 
@@ -85,7 +86,7 @@ describe('useSmartModel', () => {
 
       const { result } = renderHook(() => useSmartModel());
 
-      let generateResult;
+      let generateResult: SmartGenerateResult | undefined;
       await act(async () => {
         generateResult = await result.current.generate('测试提示词_unique1', { enableCache: false });
       });
@@ -214,7 +215,7 @@ describe('useSmartModel', () => {
       const firstCallCount = mockAIGenerate.mock.calls.length;
 
       // 第二次应该使用缓存
-      let cachedResult;
+      let cachedResult: SmartGenerateResult | undefined;
       await act(async () => {
         cachedResult = await result.current.generate('测试缓存提示词_unique6', { enableCache: true });
       });
@@ -302,7 +303,7 @@ describe('useSmartModel', () => {
 
       const { result } = renderHook(() => useSmartModel());
 
-      let results;
+      let results: string[] = [];
       await act(async () => {
         results = await result.current.generateBatch([
           '提示词1-batch_unique10',
@@ -383,7 +384,7 @@ describe('useSmartModel', () => {
 
       const { result } = renderHook(() => useSmartModel());
 
-      let generateResult;
+      let generateResult: SmartGenerateResult | undefined;
       await act(async () => {
         generateResult = await result.current.generate('提示词成本_unique24', { enableCache: false });
       });
@@ -534,7 +535,7 @@ describe('useSmartModel', () => {
     it('应该处理空的批量数组', async () => {
       const { result } = renderHook(() => useSmartModel());
 
-      let results;
+      let results: string[] = [];
       await act(async () => {
         results = await result.current.generateBatch([]);
       });
@@ -552,7 +553,7 @@ describe('useSmartModel', () => {
 
       const { result } = renderHook(() => useSmartModel());
 
-      let generateResult;
+      let generateResult: SmartGenerateResult | undefined;
       await act(async () => {
         generateResult = await result.current.generate('提示词性能_unique28', { enableCache: false });
       });
@@ -567,7 +568,8 @@ describe('useSmartModel', () => {
 
       const { result } = renderHook(() => useSmartModel());
 
-      let firstResult, cachedResult;
+      let firstResult: SmartGenerateResult | undefined;
+      let cachedResult: SmartGenerateResult | undefined;
 
       await act(async () => {
         firstResult = await result.current.generate('提示词性能缓存_unique29', { enableCache: true });
