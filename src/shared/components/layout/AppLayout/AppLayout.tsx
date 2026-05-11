@@ -3,12 +3,7 @@ import React, { PropsWithChildren } from 'react';
 import styles from './AppLayout.module.less';
 import { AppLayoutProps } from './types';
 
-const AppLayout: React.FC<AppLayoutProps> = ({
-  children,
-  header,
-  sidebar,
-  footer,
-}) => {
+const AppLayout = ({ children, header, sidebar, footer }: AppLayoutProps) => {
   return (
     <div className={styles.appLayout}>
       {header && <div className={styles.header}>{header}</div>}
@@ -24,7 +19,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
 export default AppLayout;
 
 // Named slot exports for compositional API
-export const AppLayoutHeader: React.FC<PropsWithChildren> = ({ children }) => <>{children}</>;
-export const AppLayoutSidebar: React.FC<PropsWithChildren> = ({ children }) => <>{children}</>;
-export const AppLayoutContent: React.FC<PropsWithChildren> = ({ children }) => <>{children}</>;
-export const AppLayoutFooter: React.FC<PropsWithChildren> = ({ children }) => <>{children}</>;
+export const AppLayoutHeader = ({ children }: PropsWithChildren) => <>{children}</>;
+export const AppLayoutSidebar = ({ children }: PropsWithChildren) => <>{children}</>;
+export const AppLayoutContent = ({ children }: PropsWithChildren) => <>{children}</>;
+export const AppLayoutFooter = ({ children }: PropsWithChildren) => <>{children}</>;

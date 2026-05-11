@@ -872,10 +872,7 @@ const AudioEditor: React.FC<AudioEditorProps> = ({
                     className={styles.trackTable}
                   />
                 ) : (
-                  <Empty
-                    image={Empty.PRESENTED_IMAGE_SIMPLE}
-                    description="暂无配音，点击上方按钮添加"
-                  />
+                  <Empty image={undefined} description="暂无配音，点击上方按钮添加" />
                 )}
               </div>
             ),
@@ -1038,10 +1035,7 @@ const AudioEditor: React.FC<AudioEditorProps> = ({
                     className={styles.trackTable}
                   />
                 ) : (
-                  <Empty
-                    image={Empty.PRESENTED_IMAGE_SIMPLE}
-                    description="暂无音效，点击上方按钮添加"
-                  >
+                  <Empty image={undefined} description="暂无音效，点击上方按钮添加">
                     <div className={styles.presetSfxSection}>
                       <div className={styles.presetTitle}>预设音效分类</div>
                       <div className={styles.presetList}>
