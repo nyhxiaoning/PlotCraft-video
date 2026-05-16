@@ -112,6 +112,8 @@ export interface KeyframePipelineResult {
     estimatedVideoDuration: number;
     style: string;
     generatedAt: number;
+    /** 视觉一致性评分（0-100），由 MangaPipeline 评估后填入 */
+    visualConsistencyScore?: number;
   };
   videoFragments?: unknown[];
 }

@@ -194,7 +194,8 @@ export class MangaPipelineController extends BasePipelineController {
       const materialOutput = await this.materialPipeline.process({
         storyboard: this.result.storyboard,
       });
-      const materialResult = (materialOutput as any).materialMatching as MaterialMatchingResult;
+      const materialResult = (materialOutput as StepOutput)
+        .materialMatching as MaterialMatchingResult;
       this.result.materialResult = materialResult;
       this.emitProgress(MangaPipelineStep.MATERIAL, 100, '匹配素材');
       await this.pauseCheck();
@@ -203,7 +204,7 @@ export class MangaPipelineController extends BasePipelineController {
       this.currentStep = MangaPipelineStep.VOICE;
       this.emitProgress(MangaPipelineStep.VOICE, 0, '合成语音');
       const voiceOutput = await this.voicePipeline.process({ script: scriptResult.script });
-      const voiceResult = (voiceOutput as any).voiceSynthesis as VoiceSynthesisResult;
+      const voiceResult = (voiceOutput as StepOutput).voiceSynthesis as VoiceSynthesisResult;
       this.result.voiceResult = voiceResult;
       this.emitProgress(MangaPipelineStep.VOICE, 100, '合成语音');
       await this.pauseCheck();
@@ -221,8 +222,8 @@ export class MangaPipelineController extends BasePipelineController {
       }));
       const keyframeOutput = await this.keyframePipeline.process({
         scenes: keyframeScenes,
-        style: style as any,
-        aspectRatio: '16:9' as any,
+        style: style,
+        aspectRatio: '16:9',
         dialogueSegments: voiceResult.dialogueSegments,
         characterReferences: (this.result.characterConstraints ?? []).map((c) => ({
           characterId: c.characterId,
@@ -237,7 +238,9 @@ export class MangaPipelineController extends BasePipelineController {
             : undefined,
         })),
       });
-      this.result.keyframeResult = (keyframeOutput as any).keyframePipeline;
+      this.result.keyframeResult = (keyframeOutput as StepOutput).keyframePipeline as
+        | KeyframePipelineResult
+        | undefined;
 
       // ============ Lip Sync（音画同步）============
       // 对有配音的场景进行唇形同步
@@ -248,9 +251,11 @@ export class MangaPipelineController extends BasePipelineController {
         // 评估关键帧的角色一致性并记录到 metadata
         const visualResult = await this.evaluateVisualConsistency(this.result.keyframeResult);
         if (visualResult) {
-          (this.result.keyframeResult as any).metadata.visualConsistencyScore =
-            visualResult.overallScore;
-          logger.info(`[MangaPipeline] 视觉一致性评分: ${visualResult.overallScore}/100`);
+          const kfResult = this.result.keyframeResult as KeyframePipelineResult;
+          if (kfResult.metadata) {
+            kfResult.metadata.visualConsistencyScore = visualResult.overallScore;
+            logger.info(`[MangaPipeline] 视觉一致性评分: ${visualResult.overallScore}/100`);
+          }
         }
       }
 
