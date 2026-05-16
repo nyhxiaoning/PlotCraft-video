@@ -10,6 +10,7 @@
 
 import { StepInput, StepOutput } from '@/core/pipeline/step.interface';
 import { lipSyncService } from '@/core/services/lip-sync.service';
+import { visualConsistencyScorer } from '@/core/services/visual-consistency-scorer.service';
 import { logger } from '@/core/utils/logger';
 
 import { BasePipelineController, StepState } from '../base/BasePipelineController';
@@ -214,6 +215,15 @@ export class MangaPipelineController extends BasePipelineController {
       // 对有配音的场景进行唇形同步
       if (this.result.keyframeResult) {
         await this.applyLipSync(this.result.keyframeResult);
+
+        // ============ 视觉一致性评估 ============
+        // 评估关键帧的角色一致性并记录到 metadata
+        const visualResult = await this.evaluateVisualConsistency(this.result.keyframeResult);
+        if (visualResult) {
+          (this.result.keyframeResult as any).metadata.visualConsistencyScore =
+            visualResult.overallScore;
+          logger.info(`[MangaPipeline] 视觉一致性评分: ${visualResult.overallScore}/100`);
+        }
       }
 
       this.emitProgress(MangaPipelineStep.KEYFRAME, 100, '合成视频');
@@ -306,6 +316,42 @@ export class MangaPipelineController extends BasePipelineController {
           }
         })
       );
+    }
+  }
+
+  /**
+   * 评估关键帧视频的角色视觉一致性
+   * 提取所有场景的关键帧图像，与角色三视图参考进行比对
+   */
+  private async evaluateVisualConsistency(
+    keyframeResult: KeyframePipelineResult
+  ): Promise<ReturnType<typeof visualConsistencyScorer.evaluate> | null> {
+    try {
+      const scenes = keyframeResult.keyframeScenes;
+      if (!scenes || scenes.length === 0) return null;
+
+      // 提取所有关键帧 URL（每个场景取首帧）
+      const frameUrls = scenes
+        .map((s) => s.keyframes[0]?.startFrame?.imageUrl)
+        .filter((url): url is string => !!url);
+
+      if (frameUrls.length === 0) {
+        logger.info('[MangaPipeline] 无关键帧图像可用于视觉一致性评估');
+        return null;
+      }
+
+      // 收集角色参考（从 pipeline 的 characterReferences，如果 pipeline 传递了的话）
+      // 目前从 keyframeResult 中无法直接获取 characterReferences，
+      // 降级使用启发式评分（基于 prompt 关键词密度）
+      const result = await visualConsistencyScorer.evaluate({
+        frameUrls,
+        characterReferences: [], // 暂不传，降级到启发式
+      });
+
+      return result;
+    } catch (err) {
+      logger.warn(`[MangaPipeline] 视觉一致性评估失败: ${err}`);
+      return null;
     }
   }
 }
