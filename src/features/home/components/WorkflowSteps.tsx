@@ -1,4 +1,4 @@
-import { Video, Zap, FileText, Scissors } from 'lucide-react';
+import { FileInput, FileText, Layers, User, Mic2, Download } from 'lucide-react';
 import React from 'react';
 
 import { Card, CardContent } from '@/components/ui/card';
@@ -16,33 +16,45 @@ interface Step {
 const steps: Step[] = [
   {
     number: 1,
-    icon: <Video className="h-6 w-6" />,
-    title: '上传视频',
-    description: '上传您的原始视频素材',
+    icon: <FileInput className="h-5 w-5" />,
+    title: '导入内容',
+    description: '上传小说、剧本或输入提示词，AI 自动解析结构',
   },
   {
     number: 2,
-    icon: <Zap className="h-6 w-6" />,
-    title: 'AI分析',
-    description: '智能分析视频内容和结构',
+    icon: <FileText className="h-5 w-5" />,
+    title: '生成剧本',
+    description: '大模型理解内容，输出结构化分镜脚本',
   },
   {
     number: 3,
-    icon: <FileText className="h-6 w-6" />,
-    title: '自动生成脚本',
-    description: '基于分析生成专业短视频脚本',
+    icon: <Layers className="h-5 w-5" />,
+    title: 'AI 分镜',
+    description: '根据剧本生成分镜图，支持写实、动漫、水墨多种风格',
   },
   {
     number: 4,
-    icon: <Scissors className="h-6 w-6" />,
-    title: '智能剪辑',
-    description: '一键生成精美短视频成品',
+    icon: <User className="h-5 w-5" />,
+    title: '角色设计',
+    description: '种子机制确保多场景角色外观一致性',
+  },
+  {
+    number: 5,
+    icon: <Mic2 className="h-5 w-5" />,
+    title: '语音合成',
+    description: 'TTS 唇形同步，支持多语言和情感合成',
+  },
+  {
+    number: 6,
+    icon: <Download className="h-5 w-5" />,
+    title: '导出成片',
+    description: 'MP4/WebM/MOV 多格式输出，2K 直出 + 4K 增强',
   },
 ];
 
 /**
  * 工作流程步骤组件
- * 展示产品使用流程
+ * 展示 PanelFlow 完整创作流程
  */
 const WorkflowSteps = () => {
   const { isDarkMode } = useTheme();
@@ -50,19 +62,56 @@ const WorkflowSteps = () => {
   return (
     <div className={styles.workflow}>
       <h3 className={styles.sectionTitle}>
-        <Zap className="inline-block h-5 w-5 mr-2" />
-        使用流程
+        <span className={styles.titleIcon}>
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path
+              d="M2 8h12M8 2l6 6-6 6"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </span>
+        创作流程
       </h3>
-      <div className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 ${styles.steps}`}>
+      <div className={styles.steps}>
         {steps.map((step, index) => (
-          <Card key={index} className={`${styles.stepCard} ${isDarkMode ? styles.darkCard : ''}`}>
-            <CardContent className="text-center">
-              <div className={styles.stepNumber}>{step.number}</div>
-              <div className={styles.stepIcon}>{step.icon}</div>
-              <h4 className="mb-2">{step.title}</h4>
-              <p className="text-sm text-muted-foreground">{step.description}</p>
-            </CardContent>
-          </Card>
+          <React.Fragment key={step.number}>
+            <Card className={`${styles.stepCard} ${isDarkMode ? styles.darkCard : ''}`}>
+              <CardContent className="text-center p-5">
+                <div className={styles.stepNumber}>{step.number}</div>
+                <div className={`${styles.stepIcon} ${isDarkMode ? styles.darkIcon : ''}`}>
+                  {step.icon}
+                </div>
+                <h4
+                  className={`mb-1.5 font-medium text-sm ${isDarkMode ? 'text-white' : 'text-gray-900'}`}
+                >
+                  {step.title}
+                </h4>
+                <p className="text-xs text-muted-foreground leading-relaxed">{step.description}</p>
+              </CardContent>
+            </Card>
+            {index < steps.length - 1 && (
+              <div className={styles.connector}>
+                <svg
+                  width="20"
+                  height="12"
+                  viewBox="0 0 20 12"
+                  fill="none"
+                  className={styles.connectorSvg}
+                >
+                  <path
+                    d="M0 6h18M14 1l4 5-4 5"
+                    stroke="currentColor"
+                    strokeWidth="1.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </div>
+            )}
+          </React.Fragment>
         ))}
       </div>
     </div>

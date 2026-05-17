@@ -44,16 +44,16 @@ const HomeView = () => {
       {/* 页脚 */}
       <div className={styles.footer}>
         <Separator />
-        <div className="flex items-center gap-2">
-          <span className="text-muted-foreground text-sm">© 2025 panel-flow AI</span>
+        <div className="flex items-center gap-2 justify-center flex-wrap">
+          <span className="text-muted-foreground text-sm">© 2026 panel-flow AI</span>
           <Separator orientation="vertical" className="h-4" />
           <span className="text-muted-foreground text-sm">基于 Tauri 和 React 构建</span>
           <Separator orientation="vertical" className="h-4" />
           <a
-            href="https://github.com/agions/blazecut"
+            href="https://github.com/agions/panel-flow"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-muted-foreground text-sm hover:underline"
+            className="text-muted-foreground text-sm hover:underline hover:text-[#6366f1]"
           >
             GitHub
           </a>

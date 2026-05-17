@@ -1,4 +1,4 @@
-import { Plus, Play } from 'lucide-react';
+import { Plus, Sparkles } from 'lucide-react';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -23,13 +23,34 @@ const HeroSection = () => {
 
   return (
     <div className={styles.hero}>
+      {/* 背景装饰 */}
+      <div className={styles.glow} />
+      <div className={styles.grid} />
+
       <div className={styles.heroContent}>
+        <div className={styles.badge}>
+          <Sparkles className="h-3.5 w-3.5" />
+          <span>AI驱动的视频创作平台</span>
+        </div>
+
         <h1 className={styles.title}>
-          panel-flow AI <span className={styles.highlight}>AI视频脚本创作</span>
+          panel-flow
+          <span className={styles.highlight}>AI</span>
         </h1>
-        <p className={styles.subtitle}>AI赋能的短视频创作工具，让视频制作更简单、更高效</p>
+
+        <p className={styles.subtitle}>
+          从灵感到成片，一站式完成分镜生成、角色设计、
+          <br className={styles.br} />
+          语音合成与视频渲染
+        </p>
+
         <div className={styles.heroButtons}>
-          <Button size="lg" onClick={handleCreateProject} className={styles.primaryButton}>
+          <Button
+            size="lg"
+            variant="gradient"
+            onClick={handleCreateProject}
+            className={styles.primaryButton}
+          >
             <Plus className="mr-2 h-4 w-4" />
             创建新项目
           </Button>
@@ -39,10 +60,11 @@ const HeroSection = () => {
             onClick={handleEnterWorkspace}
             className={styles.secondaryButton}
           >
-            <Play className="mr-2 h-4 w-4" />
-            进入工作台
+            继续上次项目
           </Button>
         </div>
+
+        <p className={styles.hint}>免费使用 · 无需信用卡 · 60秒上手</p>
       </div>
     </div>
   );
