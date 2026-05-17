@@ -45,7 +45,12 @@ const Tabs = React.forwardRef<React.ElementRef<typeof TabsPrimitive.Root>, TabsP
     const handleChange = onChange ? (key: string) => onChange(key) : onValueChange;
     const initialDefault = defaultActiveKey ?? defaultValue;
     // Collect TabPane children and render them as TabsList + TabsContent
-    const panes: { key: string; tab?: React.ReactNode; children?: React.ReactNode }[] = [];
+    const panes: {
+      key: string;
+      tab?: React.ReactNode;
+      children?: React.ReactNode;
+      keepMounted?: boolean;
+    }[] = [];
     const otherChildren: React.ReactNode[] = [];
 
     React.Children.forEach(children, (child) => {
@@ -59,11 +64,13 @@ const Tabs = React.forwardRef<React.ElementRef<typeof TabsPrimitive.Root>, TabsP
           key?: string;
           tab?: React.ReactNode;
           children?: React.ReactNode;
+          keepMounted?: boolean;
         }>;
         panes.push({
           key: tabChild.props.key ?? '',
           tab: tabChild.props.tab,
           children: tabChild.props.children,
+          keepMounted: tabChild.props.keepMounted ?? false,
         });
       } else {
         otherChildren.push(child);
@@ -115,7 +122,11 @@ const Tabs = React.forwardRef<React.ElementRef<typeof TabsPrimitive.Root>, TabsP
             ))}
           </TabsList>
           {panes.map((p) => (
-            <TabsContent key={String(p.key)} value={String(p.key)}>
+            <TabsContent
+              key={String(p.key)}
+              value={String(p.key)}
+              forceMount={p.keepMounted ? true : undefined}
+            >
               {p.children}
             </TabsContent>
           ))}
@@ -182,7 +193,7 @@ const TabsContent = React.forwardRef<
   <TabsPrimitive.Content
     ref={ref}
     className={cn(
-      'mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+      'mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 data-[state=inactive]:invisible',
       className
     )}
     {...props}
@@ -196,9 +207,12 @@ interface TabPaneProps {
   key?: string;
   children?: React.ReactNode;
   className?: string;
+  /** Keep content mounted in DOM when tab is inactive (preserves state) */
+  keepMounted?: boolean;
 }
 
-function TabPane({ children }: TabPaneProps) {
+function TabPane({ children, keepMounted: _keepMounted }: TabPaneProps) {
+  // forceMount is handled via data attribute passed from Tabs
   return <>{children}</>;
 }
 TabPane.displayName = 'TabPane';
