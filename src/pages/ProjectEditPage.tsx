@@ -442,10 +442,33 @@ const ProjectEdit = () => {
       return;
     }
     try {
-      // 容错处理：去除 AI 可能生成的 Markdown 代码块标记
+      // 容错处理：去除 AI 可能生成的 Markdown 代码块标记和多余的前后空格
       let cleanDraft = analysisDraft.trim();
+
+      // 处理 ```json ... ``` 的情况
       if (cleanDraft.startsWith('```')) {
-        cleanDraft = cleanDraft.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
+        // 使用更强大的正则提取被 ``` 包裹的 JSON 内容
+        const match = cleanDraft.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+        if (match && match[1]) {
+          cleanDraft = match[1].trim();
+        } else {
+          // Fallback: 如果正则没有匹配到，则简单移除首尾的 ``` 标记
+          cleanDraft = cleanDraft
+            .replace(/^```(?:json)?\s*/i, '')
+            .replace(/\s*```$/, '')
+            .trim();
+        }
+      }
+
+      // 检查是否是大模型常见的拒绝回复前缀，如果不是以 { 或 [ 开头，可能是错误信息
+      if (!cleanDraft.startsWith('{') && !cleanDraft.startsWith('[')) {
+        // 尝试从中间提取 JSON 对象
+        const jsonMatch = cleanDraft.match(/(\{[\s\S]*\}|\[[\s\S]*\])/);
+        if (jsonMatch && jsonMatch[0]) {
+          cleanDraft = jsonMatch[0].trim();
+        } else {
+          throw new Error('未找到有效的 JSON 结构');
+        }
       }
 
       const parsed = JSON.parse(cleanDraft) as StoryAnalysis;
@@ -463,9 +486,15 @@ const ProjectEdit = () => {
       setScriptText(generatedScript);
       toast.success('剧本生成完成');
       setCurrentStep(2);
-    } catch (error) {
+    } catch (error: any) {
       logger.error('接受解析结果失败:', error);
-      toast.error('解析 JSON 格式无效，请修正后重试');
+      // 如果错误消息包含我们自定义的或系统的 JSON 解析错误
+      if (error?.message?.includes('JSON') || error instanceof SyntaxError) {
+        toast.error('解析 JSON 格式无效，请修正后重试');
+      } else {
+        // 如果是 AI 服务请求报错，把真实的报错原因暴露出来
+        toast.error(`AI 剧本生成失败: ${error?.message || '网络或 API 错误'}`);
+      }
     } finally {
       setLoading(false);
     }
