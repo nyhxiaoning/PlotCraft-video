@@ -4,6 +4,7 @@
  */
 
 import { logger } from '@/core/utils/logger';
+import { getActiveModelConfig } from '@/core/ai/active-config';
 
 import { aiService } from './ai.service';
 import { costService } from './cost.service';
@@ -131,7 +132,8 @@ class NovelService {
       model?: string;
     } = {}
   ): Promise<NovelParseResult> {
-    const { maxChapters = 50, provider = 'alibaba', model = 'qwen-3.5' } = options;
+    const activeConfig = getActiveModelConfig();
+    const { maxChapters = 50, provider = activeConfig.provider, model = activeConfig.model } = options;
 
     const prompt = `
 请解析以下小说内容，提取关键信息并以 JSON 格式返回：
@@ -191,7 +193,8 @@ ${content.slice(0, 10000)}${content.length > 10000 ? '...' : ''}
       model?: string;
     } = {}
   ): Promise<ScriptScene[]> {
-    const { scenesPerChapter = 3, provider = 'alibaba', model = 'qwen-3.5' } = options;
+    const activeConfig = getActiveModelConfig();
+    const { scenesPerChapter = 3, provider = activeConfig.provider, model = activeConfig.model } = options;
 
     const prompt = `
 请将以下小说章节转换为 ${scenesPerChapter} 个剧本场景。
@@ -272,11 +275,12 @@ ${chapter.content.slice(0, 5000)}${chapter.content.length > 5000 ? '...' : ''}
       model?: string;
     } = {}
   ): Promise<Script> {
+    const activeConfig = getActiveModelConfig();
     const {
       chaptersToUse = 5,
       scenesPerChapter = 3,
-      provider = 'alibaba',
-      model = 'qwen-3.5',
+      provider = activeConfig.provider,
+      model = activeConfig.model,
     } = options;
 
     const characterNames = novelResult.characters.map((c) => c.name);
@@ -338,7 +342,8 @@ ${chapter.content.slice(0, 5000)}${chapter.content.length > 5000 ? '...' : ''}
       model?: string;
     } = {}
   ): Promise<Storyboard[]> {
-    const { panelsPerScene = 3, provider = 'alibaba', model = 'qwen-3.5' } = options;
+    const activeConfig = getActiveModelConfig();
+    const { panelsPerScene = 3, provider = activeConfig.provider, model = activeConfig.model } = options;
 
     const prompt = `
 请为以下剧本场景生成 ${panelsPerScene} 个分镜。

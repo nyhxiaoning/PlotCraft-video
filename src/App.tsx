@@ -30,77 +30,97 @@ const PageLoader = () => (
 import ErrorBoundary from './ErrorBoundary';
 import AppProvider from './providers/AppProvider';
 import { AppLayout } from './shared/components/layout';
+import { AiProviderSwitcher } from '@/features/ai/components';
+
+// 全局顶部导航栏
+function AppHeader() {
+  return (
+    <header className="h-12 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 flex items-center justify-between sticky top-0 z-50">
+      <div className="flex items-center gap-2">
+        <span className="font-bold text-sm">PlotCraft AI</span>
+      </div>
+      <div className="flex items-center gap-2">
+        <AiProviderSwitcher />
+      </div>
+    </header>
+  );
+}
+
+// 带全局 Header 的布局包装
+function AppLayoutWithHeader({ children }: { children: React.ReactNode }) {
+  return <AppLayout header={<AppHeader />}>{children}</AppLayout>;
+}
 
 // React Router 7 路由配置
 const router = createBrowserRouter([
   {
     path: '/',
     element: (
-      <AppLayout>
+      <AppLayoutWithHeader>
         <Suspense fallback={<PageLoader />}>
           <HomePage />
         </Suspense>
-      </AppLayout>
+      </AppLayoutWithHeader>
     ),
   },
   {
     path: '/workflow',
     element: (
-      <AppLayout>
+      <AppLayoutWithHeader>
         <Suspense fallback={<PageLoader />}>
           <WorkflowPage />
         </Suspense>
-      </AppLayout>
+      </AppLayoutWithHeader>
     ),
   },
   {
     path: '/project/new',
     element: (
-      <AppLayout>
+      <AppLayoutWithHeader>
         <Suspense fallback={<PageLoader />}>
           <ProjectEditPage />
         </Suspense>
-      </AppLayout>
+      </AppLayoutWithHeader>
     ),
   },
   {
     path: '/project/edit/:projectId',
     element: (
-      <AppLayout>
+      <AppLayoutWithHeader>
         <Suspense fallback={<PageLoader />}>
           <ProjectEditPage />
         </Suspense>
-      </AppLayout>
+      </AppLayoutWithHeader>
     ),
   },
   {
     path: '/project/:projectId',
     element: (
-      <AppLayout>
+      <AppLayoutWithHeader>
         <Suspense fallback={<PageLoader />}>
           <ProjectDetailPage />
         </Suspense>
-      </AppLayout>
+      </AppLayoutWithHeader>
     ),
   },
   {
     path: '/settings',
     element: (
-      <AppLayout>
+      <AppLayoutWithHeader>
         <Suspense fallback={<PageLoader />}>
           <SettingsPage />
         </Suspense>
-      </AppLayout>
+      </AppLayoutWithHeader>
     ),
   },
   {
     path: '/demo',
     element: (
-      <AppLayout>
+      <AppLayoutWithHeader>
         <Suspense fallback={<PageLoader />}>
           <UIDemo />
         </Suspense>
-      </AppLayout>
+      </AppLayoutWithHeader>
     ),
   },
   {

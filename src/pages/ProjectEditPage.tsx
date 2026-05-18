@@ -27,6 +27,7 @@ import type {
   StoryboardVersion,
   VersionDiffSummary,
 } from '@/core/services';
+import { getActiveModelConfig } from '@/core/ai/active-config';
 import {
   aiService,
   audioPipelineService,
@@ -481,7 +482,7 @@ const ProjectEdit = () => {
       toast.info('正在根据解析结果生成剧本...');
       const generatedScript = await aiService.generate(
         `请基于以下故事结构生成适合视频脚本制作的剧本：\n\n${JSON.stringify(parsed, null, 2)}\n\n要求：按场景输出，包含旁白、对白、动作描述。`,
-        { model: 'gpt-4', provider: 'openai' }
+        { model: getActiveModelConfig().model, provider: getActiveModelConfig().provider }
       );
       setScriptText(generatedScript);
       toast.success('剧本生成完成');

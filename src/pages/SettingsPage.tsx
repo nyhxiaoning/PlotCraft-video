@@ -3,17 +3,15 @@
  */
 
 import {
+  ArrowLeft,
   Settings as SettingsIcon,
   User,
   Bell,
-  Zap,
-  Key,
-  CheckCircle,
   Info,
-  Edit,
   Lightbulb,
 } from 'lucide-react';
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -34,74 +32,29 @@ import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTheme } from '@/context/ThemeContext';
-import { logger } from '@/core/utils/logger';
-import { toast } from '@/shared/components/ui/Toast';
+import { AiProviderSettings } from '@/features/ai/components';
 
 import styles from './Settings.module.less';
 
-// API 密钥配置
-const apiProviders = [
-  {
-    key: 'openai',
-    name: 'OpenAI',
-    logo: '🤖',
-    models: ['gpt-4', 'gpt-4-turbo', 'gpt-3.5-turbo'],
-    color: '#10a37f',
-  },
-  {
-    key: 'anthropic',
-    name: 'Anthropic',
-    logo: '🧠',
-    models: ['claude-3-opus', 'claude-3-sonnet', 'claude-3-haiku'],
-    color: '#d4a373',
-  },
-  {
-    key: 'baidu',
-    name: '百度',
-    logo: '🔍',
-    models: ['ernie-4', 'ernie-3.5'],
-    color: '#2932e1',
-  },
-  {
-    key: 'alibaba',
-    name: '阿里',
-    logo: '☁️',
-    models: ['qwen-turbo', 'qwen-plus', 'qwen-max'],
-    color: '#ff6a00',
-  },
-  {
-    key: 'zhipu',
-    name: '智谱',
-    logo: '📊',
-    models: ['glm-4', 'glm-3-turbo'],
-    color: '#5e72e4',
-  },
-];
-
 const Settings = () => {
   const [activeTab, setActiveTab] = useState('general');
-  const [apiKeys] = useState<Record<string, string>>({
-    openai: '',
-    anthropic: '',
-    baidu: '',
-    alibaba: '',
-    zhipu: '',
-  });
+  const navigate = useNavigate();
 
   const { isDarkMode, toggleTheme } = useTheme();
 
-  const handleSaveApiKey = (provider: string) => {
-    logger.info('保存 API Key:', provider);
-    toast.success('API Key 已保存');
-  };
-
   return (
     <div className={styles.settings}>
+      <div className="flex items-center gap-2 mb-4">
+        <Button variant="ghost" size="sm" onClick={() => navigate('/')}>
+          <ArrowLeft className="h-4 w-4 mr-1" />
+          返回主页
+        </Button>
+      </div>
       <Card className={styles.settingsCard}>
         <Tabs value={activeTab} onValueChange={setActiveTab} className={styles.tabs}>
           <TabsList className="w-full justify-start flex-wrap h-auto gap-1">
             <TabsTrigger value="api" className="flex items-center gap-2">
-              <ApiIcon className="h-4 w-4" /> API 配置
+              <SettingsIcon className="h-4 w-4" /> API 配置
             </TabsTrigger>
             <TabsTrigger value="general" className="flex items-center gap-2">
               <SettingsIcon className="h-4 w-4" /> 通用设置
@@ -119,106 +72,7 @@ const Settings = () => {
 
           {/* API 配置 */}
           <TabsContent value="api" className="space-y-6">
-            <div className={styles.section}>
-              <h3 className="text-lg font-semibold mb-2">AI 模型 API</h3>
-              <p className="text-muted-foreground mb-4">
-                配置您使用的 AI 服务商 API 密钥，不同服务商支持不同的模型。
-              </p>
-
-              <div className="space-y-4">
-                {apiProviders.map((provider) => (
-                  <Card key={provider.key} className={styles.providerCard}>
-                    <div className={styles.providerHeader}>
-                      <div className={styles.providerInfo}>
-                        <span className={styles.providerLogo}>{provider.logo}</span>
-                        <span className={styles.providerName}>{provider.name}</span>
-                        {apiKeys[provider.key] ? (
-                          <Badge variant="default" className="bg-green-500">
-                            已配置
-                          </Badge>
-                        ) : (
-                          <Badge variant="secondary">未配置</Badge>
-                        )}
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleSaveApiKey(provider.key)}
-                      >
-                        <Edit className="h-4 w-4 mr-1" />
-                        {apiKeys[provider.key] ? '修改' : '添加'}
-                      </Button>
-                    </div>
-
-                    <div className={styles.modelSelect}>
-                      <Label>选择模型：</Label>
-                      <Select defaultValue={provider.models[0]}>
-                        <SelectTrigger className="w-[200px]">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {provider.models.map((m) => (
-                            <SelectItem key={m} value={m}>
-                              {m}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            </div>
-
-            <Separator />
-
-            <div className={styles.section}>
-              <h3 className="text-lg font-semibold mb-4">API 使用统计</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Card className={styles.statCard}>
-                  <div className="flex items-center gap-4">
-                    <div
-                      className={styles.statIcon}
-                      style={{ background: '#e0e7ff', color: '#6366f1' }}
-                    >
-                      <Zap className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">本月调用</p>
-                      <p className="text-2xl font-bold">1,234</p>
-                    </div>
-                  </div>
-                </Card>
-                <Card className={styles.statCard}>
-                  <div className="flex items-center gap-4">
-                    <div
-                      className={styles.statIcon}
-                      style={{ background: '#fef3c7', color: '#f59e0b' }}
-                    >
-                      <Key className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">消耗 Tokens</p>
-                      <p className="text-2xl font-bold">567K</p>
-                    </div>
-                  </div>
-                </Card>
-                <Card className={styles.statCard}>
-                  <div className="flex items-center gap-4">
-                    <div
-                      className={styles.statIcon}
-                      style={{ background: '#d1fae5', color: '#10b981' }}
-                    >
-                      <CheckCircle className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">成功调用</p>
-                      <p className="text-2xl font-bold">98.5%</p>
-                    </div>
-                  </div>
-                </Card>
-              </div>
-            </div>
+            <AiProviderSettings />
           </TabsContent>
 
           {/* 通用设置 */}
@@ -480,6 +334,3 @@ const Settings = () => {
 };
 
 export default Settings;
-
-// Icon wrapper for Lucide
-const ApiIcon = ({ className }: { className?: string }) => <Key className={className} />;

@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.0] - 2026-05-18
+
+### ✨ AI Provider 配置与切换
+
+- **AI Provider 设置页面**: 重写设置页 API 选项卡，使用 `MODEL_PROVIDERS` 配置中心数据源，支持 14 个 AI 提供商的密钥配置、连接测试、默认设置
+- **顶部导航栏快速切换**: 新增全局 Header 组件，包含 AI Provider 下拉快速切换器，所有页面均可访问
+- **打通设置与调用链路**: 新增 `getActiveModelConfig()` 工具，从 localStorage 读取用户首选提供商，并映射到对应模型
+  - pipeline 剧本生成步骤默认模型从硬编码 `glm-5`/`zhipu` 改为读取活跃配置
+  - ProjectEditPage 中硬编码的 `gpt-4`/`openai` 改为读取活跃配置
+  - NovelService 中 4 处硬编码 `qwen-3.5`/`alibaba` 改为读取活跃配置
+  - StoryboardService 中 1 处硬编码 `qwen-3.5`/`alibaba` 改为读取活跃配置
+- **API Key 存储扩展**: 新增 google/alibaba/tencent/minimax/moonshot/kling/bytedance 等提供商的密钥安全存储支持
+- 新增组件：`AiProviderSettings`、`AiProviderSwitcher`
+
+### 🐛 修复
+
+- **LESS 导入路径修复**: 修复 `src/features/*/components/` 下多个 `.module.less` 文件中错误的 `variables.less` 导入路径 (`../../styles/` → `../../../styles/`)
+
 ## [1.0.0] - 2026-05-07
 
 ### 🎉 Project Renamed

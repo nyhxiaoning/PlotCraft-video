@@ -6,6 +6,7 @@
 import { v4 as uuidv4 } from 'uuid';
 
 import { logger } from '@/core/utils/logger';
+import { getActiveModelConfig } from '@/core/ai/active-config';
 import type { StoryboardFrame } from '@/features/storyboard/components/StoryboardEditor';
 
 import { aiService } from './ai.service';
@@ -171,7 +172,8 @@ export class StoryboardService {
       frameCount?: number;
     } = {}
   ): Promise<StoryboardFrame[]> {
-    const { provider = 'alibaba', model = 'qwen-3.5', frameCount = 8 } = options;
+    const activeConfig = getActiveModelConfig();
+    const { provider = activeConfig.provider, model = activeConfig.model, frameCount = 8 } = options;
 
     // 构建提示词
     const prompt = `

@@ -5,6 +5,7 @@
  */
 
 import { aiService } from '@/core/services/ai.service';
+import { getActiveModelConfig } from '@/core/ai/active-config';
 import { logger } from '@/core/utils/logger';
 
 import type {
@@ -58,8 +59,9 @@ export class ScriptStep implements PipelineStep {
       backoffMultiplier: 2,
       maxDelayMs: 10000,
     };
-    this.model = config?.model ?? 'glm-5';
-    this.provider = config?.provider ?? 'zhipu';
+    const activeConfig = getActiveModelConfig();
+    this.model = config?.model ?? activeConfig.model;
+    this.provider = config?.provider ?? activeConfig.provider;
   }
 
   async execute(input: StepInput): Promise<StepOutput> {

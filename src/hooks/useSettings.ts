@@ -41,9 +41,16 @@ const setStoredValue = <T>(key: string, value: T): void => {
 const API_KEY_SECURE_KEYS: Record<string, string> = {
   'openai_api_key': 'openai_api_key',
   'anthropic_api_key': 'anthropic_api_key',
-  'iflytek_api_key': 'iflytek_api_key',
-  'zhipu_api_key': 'zhipu_api_key',
+  'google_api_key': 'google_api_key',
   'baidu_api_key': 'baidu_api_key',
+  'alibaba_api_key': 'alibaba_api_key',
+  'zhipu_api_key': 'zhipu_api_key',
+  'iflytek_api_key': 'iflytek_api_key',
+  'tencent_api_key': 'tencent_api_key',
+  'minimax_api_key': 'minimax_api_key',
+  'moonshot_api_key': 'moonshot_api_key',
+  'kling_api_key': 'kling_api_key',
+  'bytedance_api_key': 'bytedance_api_key',
 };
 
 // 安全存储的API密钥获取

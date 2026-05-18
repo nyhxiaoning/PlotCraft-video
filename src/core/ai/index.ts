@@ -9,6 +9,9 @@ export * from './providers';
 // Chains
 export * from './chains';
 
+// Active Config
+export { getActiveModelConfig, getPreferredProvider, getPreferredCategory, getRecommendedModelForProvider } from './active-config';
+
 /**
  * 使用示例：
  * 
