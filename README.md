@@ -2,6 +2,9 @@
 
 ## 开发阶段：使用PC浏览器，但是完成后使用tauri
 
+- 关闭多余的端口
+  sudo lsof -t -i:1420 | xargs kill -9
+
 - 最终希望在pc端和tauri打包，一致性。
 
 注意：
