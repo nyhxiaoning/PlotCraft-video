@@ -1,4 +1,4 @@
-import { Upload, FileText, Trash2 } from 'lucide-react';
+import { FileText, Trash2, Upload } from 'lucide-react';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -72,11 +72,62 @@ function NovelImporter({
   };
 
   /**
+   * 浏览器环境下的备用文件选择和读取
+   */
+  const handleBrowserFileSelect = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.txt,.md,.docx';
+    input.onchange = async (e: any) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      setIsLoading(true);
+      try {
+        const text = await file.text();
+        const filename = file.name;
+
+        const novelMetadata = buildMetadata(text, {
+          filename,
+          sourceType: 'file',
+        });
+
+        const errors = novelMetadata.validation.issues.filter((issue) => issue.level === 'error');
+        if (errors.length > 0) {
+          toast.error(errors[0].message);
+          setIsLoading(false);
+          return;
+        }
+
+        setContent(text);
+        setMetadata(novelMetadata);
+        onContentLoad(text, novelMetadata);
+        toast.success('小说文件导入成功');
+      } catch (err) {
+        logger.error('浏览器读取文件失败:', err);
+        toast.error('读取文件失败，请确保文件格式正确');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    input.click();
+  };
+
+  /**
    * 选择小说文件
    */
   const handleSelectFile = async () => {
     try {
-      // 打开文件选择对话框
+      // 判断是否在 Tauri 环境中
+      const isTauriEnv = !!(window as any).__TAURI_INTERNALS__;
+
+      if (!isTauriEnv) {
+        // 如果是在普通浏览器（如网页预览）中，使用原生的 Input 方案
+        handleBrowserFileSelect();
+        return;
+      }
+
+      // 打开文件选择对话框 (Tauri 环境)
       const selected = await tauriService.openFile({
         multiple: false,
         filters: [
@@ -87,12 +138,33 @@ function NovelImporter({
         ],
       });
 
+      console.log('Tauri openFile result:', selected);
+
       // 如果用户取消选择，selected将是null
-      if (!selected || Array.isArray(selected)) {
+      if (!selected) {
         return;
       }
 
-      const filePath = selected as string;
+      let filePath: string = '';
+      if (typeof selected === 'string') {
+        filePath = selected;
+      } else if (Array.isArray(selected) && selected.length > 0) {
+        // 如果返回的是数组
+        const first = selected[0];
+        filePath = typeof first === 'string' ? first : (first as any).path || '';
+      } else if (typeof selected === 'object' && selected !== null) {
+        // 如果返回的是对象
+        filePath = (selected as any).path || '';
+        // 如果是一个真正的空对象 {}（Tauri 取消选择的 bug）
+        if (!filePath && Object.keys(selected).length === 0) {
+          return;
+        }
+      }
+
+      if (!filePath) {
+        toast.error(`无法获取文件路径: ${JSON.stringify(selected)}`);
+        return;
+      }
       setIsLoading(true);
 
       try {
@@ -133,9 +205,9 @@ function NovelImporter({
       } finally {
         setIsLoading(false);
       }
-    } catch (error) {
+    } catch (error: any) {
       logger.error('选择文件失败:', error);
-      toast.error('选择文件失败，请重试');
+      toast.error(`选择文件失败: ${error?.message || JSON.stringify(error)}`);
     }
   };
 
