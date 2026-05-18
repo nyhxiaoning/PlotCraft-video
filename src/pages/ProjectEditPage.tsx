@@ -442,7 +442,13 @@ const ProjectEdit = () => {
       return;
     }
     try {
-      const parsed = JSON.parse(analysisDraft) as StoryAnalysis;
+      // 容错处理：去除 AI 可能生成的 Markdown 代码块标记
+      let cleanDraft = analysisDraft.trim();
+      if (cleanDraft.startsWith('```')) {
+        cleanDraft = cleanDraft.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
+      }
+
+      const parsed = JSON.parse(cleanDraft) as StoryAnalysis;
       setStoryAnalysis(parsed);
       setAnalysisState('accepted');
       if (storyboardFrames.length === 0) {
