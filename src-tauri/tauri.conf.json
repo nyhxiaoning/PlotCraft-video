@@ -70,27 +70,7 @@
   },
   "plugins": {
     "fs": {
-      "scope": {
-        "allow": ["$APPDATA/**", "$APPCONFIG/**", "$TEMP/**", "$RESOURCE/**", "$DOWNLOAD/**", "$DOCUMENT/**", "$VIDEO/**"]
-      }
-    },
-    "dialog": {
-      "all": true
-    },
-    "notification": {
-      "all": true
-    },
-    "clipboard-manager": {
-      "all": true
-    },
-    "shell": {
-      "open": true
-    },
-    "global-shortcut": {
-      "all": true
-    },
-    "os": {
-      "all": true
+      "requireLiteralLeadingDot": false
     }
   }
 }

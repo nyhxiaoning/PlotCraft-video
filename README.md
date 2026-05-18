@@ -1,5 +1,19 @@
 # panel-flow
 
+## 开发阶段：使用PC浏览器，但是完成后使用tauri
+
+- 最终希望在pc端和tauri打包，一致性。
+
+注意：
+这里npm run dev使用本地浏览器，总是出现不匹配
+
+### 启动方式使用tauri
+
+```
+npm run tauri dev
+
+```
+
 **AI 驱动的视频脚本创作平台** — 将小说、剧本或提示词转化为专业级视频内容
 
 <div align="center">
