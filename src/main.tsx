@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 
 import { ThemeProvider } from '@/context/ThemeContext';
+import './styles/globals.css';
 import './index.css';
 import './assets/theme.less';
 import { logger } from '@/core/utils/logger';
@@ -31,4 +32,4 @@ root.render(
       <App />
     </ThemeProvider>
   </React.StrictMode>
-); 
+);

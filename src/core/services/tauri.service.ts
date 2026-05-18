@@ -7,7 +7,13 @@ import { invoke } from '@tauri-apps/api/core';
 import { listen, UnlistenFn } from '@tauri-apps/api/event';
 import { appConfigDir, appDataDir, documentDir, videoDir, downloadDir } from '@tauri-apps/api/path';
 import { getCurrentWindow } from '@tauri-apps/api/window';
-import { open, save, message, ask, confirm } from '@tauri-apps/plugin-dialog';
+import {
+  open as dialogOpen,
+  save as dialogSave,
+  message as dialogMessage,
+  ask as dialogAsk,
+  confirm as dialogConfirm,
+} from '@tauri-apps/plugin-dialog';
 import { readTextFile, writeTextFile, exists, mkdir, remove, readDir } from '@tauri-apps/plugin-fs';
 import {
   sendNotification,
@@ -174,26 +180,40 @@ class TauriService {
    * 打开文件选择对话框
    */
   async openFile(options?: OpenFileOptions): Promise<string | string[] | null> {
-    const result = await open({
+    const result = await dialogOpen({
       title: options?.title ?? '选择文件',
       defaultPath: options?.defaultPath,
       filters: options?.filters,
       multiple: options?.multiple ?? false,
       directory: options?.directory ?? false,
     });
-    return result;
+    return result as string | string[] | null;
   }
 
   /**
    * 打开保存文件对话框
    */
   async saveFile(options?: SaveFileOptions): Promise<string | null> {
-    const result = await save({
+    const result = await dialogSave({
       title: options?.title ?? '保存文件',
       defaultPath: options?.defaultPath,
       filters: options?.filters,
     });
-    return result;
+    return result as string | null;
+  }
+
+  // ========== 弹窗 ==========
+
+  async message(msg: string, options?: { title?: string; kind?: 'info' | 'warning' | 'error' }) {
+    await dialogMessage(msg, options);
+  }
+
+  async ask(msg: string, options?: { title?: string; kind?: 'info' | 'warning' | 'error' }) {
+    return dialogAsk(msg, options);
+  }
+
+  async confirm(msg: string, options?: { title?: string; kind?: 'info' | 'warning' | 'error' }) {
+    return dialogConfirm(msg, options);
   }
 
   /**

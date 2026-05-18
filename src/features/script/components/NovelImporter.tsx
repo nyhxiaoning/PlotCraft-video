@@ -1,4 +1,4 @@
-import { Upload, FileText, Trash2 } from 'lucide-react';
+import { FileText, Trash2, Upload } from 'lucide-react';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -88,11 +88,38 @@ function NovelImporter({
       });
 
       // 如果用户取消选择，selected将是null
-      if (!selected || Array.isArray(selected)) {
+      if (!selected) {
         return;
       }
 
-      const filePath = selected as string;
+      // 在某些系统上，单选时如果返回了数组（可能插件行为不一致），取第一个
+      const firstSelected = Array.isArray(selected) ? selected[0] : selected;
+
+      // 修复：全面处理字符串、对象（可能存在不同键名）和空对象的情况
+      let filePath: string | null = null;
+      if (typeof firstSelected === 'string') {
+        filePath = firstSelected;
+      } else if (typeof firstSelected === 'object' && firstSelected !== null) {
+        // 如果是类似 File 的对象
+        if ('path' in firstSelected) {
+          filePath = (firstSelected as any).path;
+        } else {
+          // 有些浏览器环境的 fallback 会直接返回 File 对象实例
+          // 为了能在报错里看清到底是什么，我们尝试打印
+          console.log('Tauri returned object without path:', firstSelected);
+
+          // 如果真的只是一个空对象 {}，说明用户其实是取消了选择或者插件返回了错误的值
+          if (Object.keys(firstSelected).length === 0) {
+            return; // 当做取消选择处理
+          }
+        }
+      }
+
+      if (!filePath) {
+        toast.error(`无法解析文件路径: ${JSON.stringify(firstSelected)}`);
+        return;
+      }
+
       setIsLoading(true);
 
       try {
@@ -133,9 +160,9 @@ function NovelImporter({
       } finally {
         setIsLoading(false);
       }
-    } catch (error) {
+    } catch (error: any) {
       logger.error('选择文件失败:', error);
-      toast.error('选择文件失败，请重试');
+      toast.error(`选择文件失败，请重试: ${error?.message || JSON.stringify(error)}`);
     }
   };
 

@@ -15,7 +15,13 @@
 
 import { User } from 'lucide-react';
 import * as React from 'react';
-import { useForm as useRhfForm, type UseFormReturn as RhfUseFormReturn } from 'react-hook-form';
+import {
+  useForm as useRhfForm,
+  type UseFormReturn as RhfUseFormReturn,
+  Controller,
+  useFormContext,
+  FormProvider,
+} from 'react-hook-form';
 import { toast } from 'sonner';
 
 import {
@@ -111,7 +117,7 @@ function Form({
   className,
   children,
 }: FormProps) {
-  return (
+  const content = (
     <form
       className={className}
       onSubmit={(e) => {
@@ -119,16 +125,16 @@ function Form({
         if (form) {
           form.handleSubmit((data) => {
             onFinish?.(data as FormValues);
-          })();
+          })(e);
         }
-        if (onFinish) {
+        if (onFinish && !form) {
           const formData = new FormData(e.currentTarget);
           const values: Record<string, any> = {};
           formData.forEach((v, k) => {
             values[k] = v;
           });
           // Merge with initialValues if form has them
-          if (form && initialValues) {
+          if (initialValues) {
             Object.assign(values, initialValues);
           }
           onFinish(values);
@@ -140,10 +146,14 @@ function Form({
         gap: layout === 'horizontal' ? '1rem' : 0,
       }}
     >
-      {/* react-hook-form needs special handling, fall through for now */}
       {children}
     </form>
   );
+
+  if (form) {
+    return <FormProvider {...form}>{content}</FormProvider>;
+  }
+  return content;
 }
 
 // Form.Item as a property on Form - defined after FormItem declaration
@@ -156,11 +166,53 @@ interface FormItemProps {
   className?: string;
 }
 
-function FormItem({ label, children, className }: FormItemProps) {
-  return (
+function FormItem({ name, label, children, className, rules }: FormItemProps) {
+  const context = useFormContext();
+
+  const content = (
     <div className={cn('flex flex-col gap-1', className)}>
       {label && <label className="text-sm font-medium">{label}</label>}
       {children}
+    </div>
+  );
+
+  if (!context || !name) {
+    return content;
+  }
+
+  // Handle AntD array names like ['appearance', 'gender'] -> 'appearance.gender'
+  const fieldName = Array.isArray(name) ? name.join('.') : name;
+
+  return (
+    <div className={cn('flex flex-col gap-1', className)}>
+      {label && <label className="text-sm font-medium">{label}</label>}
+      <Controller
+        name={fieldName}
+        control={context.control}
+        rules={{
+          required: rules?.some((r) => r.required)
+            ? rules.find((r) => r.message)?.message || true
+            : false,
+        }}
+        render={({ field }) => {
+          if (React.isValidElement(children)) {
+            return React.cloneElement(children as React.ReactElement, {
+              ...field,
+              onChange: (e: any) => {
+                if (e?.target !== undefined) {
+                  field.onChange(e);
+                } else {
+                  field.onChange(e); // for components like Select that pass value directly
+                }
+                if ((children as React.ReactElement).props.onChange) {
+                  (children as React.ReactElement).props.onChange(e);
+                }
+              },
+            });
+          }
+          return children as React.ReactElement;
+        }}
+      />
     </div>
   );
 }
@@ -273,6 +325,7 @@ function LegacySelect({
             onChange={(e) => {
               if (e.target.value) handleValueChange(e.target.value);
             }}
+            value=""
           >
             <option value="">选择预设</option>
             {options.map((opt) => (
@@ -288,8 +341,7 @@ function LegacySelect({
 
   return (
     <ShadcnSelect
-      value={value as string}
-      defaultValue={defaultValue as string}
+      value={(value || defaultValue || '') as string}
       onValueChange={handleValueChange}
       disabled={disabled}
     >

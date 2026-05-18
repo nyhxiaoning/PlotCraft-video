@@ -1,16 +1,16 @@
 import {
+  AlertTriangle,
   ArrowLeft,
-  Save,
-  FileText,
-  Zap,
-  Edit,
   CheckCircle,
-  User,
+  Download,
+  Edit,
+  FileText,
   Image,
   PlayCircle,
+  Save,
+  User,
   Volume2,
-  Download,
-  AlertTriangle,
+  Zap,
 } from 'lucide-react';
 import React, { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
@@ -20,17 +20,6 @@ import CostDashboard from '@/components/business/CostDashboard';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { useForm } from '@/components/ui/ui-components';
-import {
-  aiService,
-  tauriService,
-  audioPipelineService,
-  collaborationService,
-  costService,
-  qualityGateService,
-  reviewExportService,
-  storyAnalysisService,
-} from '@/core/services';
 import type {
   EvaluationScores,
   FrameComment,
@@ -38,26 +27,39 @@ import type {
   StoryboardVersion,
   VersionDiffSummary,
 } from '@/core/services';
-import type { ExportSettings, StoryAnalysis, Character, CompositionProject } from '@/core/types';
-import { runWhenIdle } from '@/core/utils/idle';
+import {
+  aiService,
+  audioPipelineService,
+  collaborationService,
+  costService,
+  qualityGateService,
+  reviewExportService,
+  storyAnalysisService,
+  tauriService,
+} from '@/core/services';
+import type { Character, CompositionProject, ExportSettings, StoryAnalysis } from '@/core/types';
 import { logger } from '@/core/utils/logger';
 import type { AudioTrackConfig } from '@/features/audio/components/AudioEditor';
-import type { NovelMetadata } from '@/features/script/components/NovelImporter';
-import type { StoryboardFrame } from '@/features/storyboard/components/StoryboardEditor';
-import { toast } from '@/shared/components/ui/Toast';
 
+import type { NovelMetadata } from '@/features/script/components/NovelImporter';
 import {
-  StepContentImport,
   StepContentAIAnalysis,
+  StepContentAudio,
+  StepContentCharacter,
+  StepContentComposition,
+  StepContentExport,
+  StepContentImport,
+  StepContentRender,
   StepContentScript,
   StepContentStoryboard,
-  StepContentCharacter,
-  StepContentRender,
-  StepContentComposition,
-  StepContentAudio,
-  StepContentExport,
 } from './ProjectEdit/components';
+
+import type { StoryboardFrame } from '@/features/storyboard/components/StoryboardEditor';
+import { runWhenIdle } from '@/core/utils/idle';
+
 import styles from './ProjectEdit.module.less';
+
+import { toast } from '@/shared/components/ui/Toast';
 
 export interface ProjectData {
   id: string;
@@ -89,7 +91,8 @@ const ProjectEdit = () => {
   const { projectId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
-  const [form] = useForm() as any;
+  const [projectName, setProjectName] = useState('');
+  const [projectDescription, setProjectDescription] = useState('');
 
   const [currentStep, setCurrentStep] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -191,10 +194,8 @@ const ProjectEdit = () => {
         .then((projectText) => {
           const projectData = JSON.parse(projectText) as ProjectData;
           setProject(projectData);
-          form.setFieldsValue({
-            name: projectData.name,
-            description: projectData.description,
-          });
+          setProjectName(projectData.name || '');
+          setProjectDescription(projectData.description || '');
 
           if (projectData.content) setContent(projectData.content);
           if (projectData.novelMetadata) setNovelMetadata(projectData.novelMetadata);
@@ -256,7 +257,7 @@ const ProjectEdit = () => {
           setInitialLoading(false);
         });
     }
-  }, [projectId, form, location.search]);
+  }, [projectId, location.search]);
 
   // --- 事件处理函数 ---
 
@@ -467,18 +468,20 @@ const ProjectEdit = () => {
 
   const handleSaveProject = async () => {
     try {
-      await form.validateFields();
+      if (!projectName.trim()) {
+        toast.error('请输入项目名称');
+        return;
+      }
       if (!content) {
         toast.error('请先导入小说/剧本内容');
         return;
       }
       setSaving(true);
-      const formData = form.getFieldsValue();
       const now = new Date().toISOString();
       const projectData: ProjectData = {
         id: project?.id ?? uuid(),
-        name: formData.name,
-        description: formData.description,
+        name: projectName,
+        description: projectDescription,
         content: content,
         createdAt: project?.createdAt ?? now,
         updatedAt: now,
@@ -527,7 +530,7 @@ const ProjectEdit = () => {
       const mdContent = reviewExportService.toMarkdown({
         project: {
           id: project.id,
-          name: form.getFieldValue('name') ?? project.name ?? '未命名项目',
+          name: projectName || project.name || '未命名项目',
           storyboardFrameCount: storyboardFrames.length,
         },
         comments: projectComments,
@@ -541,7 +544,7 @@ const ProjectEdit = () => {
         mdContent,
         {
           projectId: project.id,
-          projectName: form.getFieldValue('name') ?? project.name ?? '未命名项目',
+          projectName: projectName || project.name || '未命名项目',
           source: 'project_edit',
         }
       );
@@ -699,7 +702,7 @@ const ProjectEdit = () => {
             exportPreset={exportPreset}
             exportSettings={exportSettings}
             projectId={project?.id}
-            projectName={form.getFieldValue('name') ?? '未命名项目'}
+            projectName={projectName || '未命名项目'}
             storyboardFrameCount={storyboardFrames.length}
             qualityGateIssues={exportQualityGate.issues}
             qualityGatePassed={exportQualityGate.passed}

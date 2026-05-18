@@ -141,12 +141,15 @@ function CharacterDesigner({
   const handleAdd = () => {
     setActiveTab('manual');
     setSelectedTemplate(null);
-    form.resetFields();
-    form.setFieldsValue({
-      appearance: DEFAULT_APPEARANCE,
-      clothing: [],
-      tags: [],
-    });
+    if (typeof form.resetFields === 'function') {
+      form.resetFields();
+    } else if (typeof form.reset === 'function') {
+      form.reset({
+        appearance: DEFAULT_APPEARANCE,
+        clothing: [],
+        tags: [],
+      });
+    }
     setAvatarUrl(undefined);
     setEditingId(null);
     setClothingItems([]);
@@ -163,7 +166,8 @@ function CharacterDesigner({
     setEditingId(character.id);
     setAvatarUrl(undefined);
     setClothingItems((character.clothing ?? []) as ClothingItem[]);
-    form.setFieldsValue({
+
+    const initialValues = {
       name: character.name,
       role: character.role,
       description: character.description,
@@ -171,7 +175,13 @@ function CharacterDesigner({
       clothing: character.clothing,
       tags: character.tags,
       voice: character.voice,
-    });
+    };
+
+    if (typeof form.setFieldsValue === 'function') {
+      form.setFieldsValue(initialValues);
+    } else if (typeof form.reset === 'function') {
+      form.reset(initialValues);
+    }
     setModalVisible(true);
   };
 
@@ -220,7 +230,15 @@ function CharacterDesigner({
   // 保存角色
   const handleSave = async () => {
     try {
-      const values = await form.validateFields();
+      let values: any;
+      if (typeof form.validateFields === 'function') {
+        values = await form.validateFields();
+      } else {
+        const isValid = await form.trigger?.();
+        if (isValid === false) throw new Error('Validation failed');
+        values = form.getValues?.() || {};
+      }
+
       const now = new Date().toISOString();
 
       // 确保 consistency.seed 存在
@@ -258,7 +276,11 @@ function CharacterDesigner({
 
       notifyChange(newChars);
       setModalVisible(false);
-      form.resetFields();
+      if (typeof form.resetFields === 'function') {
+        form.resetFields();
+      } else if (typeof form.reset === 'function') {
+        form.reset();
+      }
     } catch (error) {
       logger.error('Validation failed:', error);
     }
@@ -446,7 +468,11 @@ function CharacterDesigner({
         onCancel={() => {
           setModalVisible(false);
           setEditingId(null);
-          form.resetFields();
+          if (typeof form.resetFields === 'function') {
+            form.resetFields();
+          } else if (typeof form.reset === 'function') {
+            form.reset();
+          }
         }}
         width={800}
         okText="保存"
