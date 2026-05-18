@@ -4,3 +4,4 @@
 
 export { default as AudioEditorView } from './AudioEditorView';
 export { default as AudioEditor } from './AudioEditor';
+export { default as TtsSettings } from './TtsSettings';

@@ -9,10 +9,13 @@ import {
   Headphones,
   Music,
   Settings,
+  Settings2,
   MicOff,
   Folder,
+  AudioLines,
+  Loader,
 } from 'lucide-react';
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -28,6 +31,15 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from '@/components/ui/confirm-dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Tabs } from '@/components/ui/tabs';
@@ -42,7 +54,10 @@ import {
   Empty,
   Progress,
 } from '@/components/ui/ui-components';
+import { DEFAULT_TTS_CONFIG, TTS_VOICES, ttsService } from '@/core/services/tts.service';
+import type { TTSConfig } from '@/core/types';
 import { logger } from '@/core/utils/logger';
+import { TtsSettings } from '@/features/audio/components';
 import { formatTime, generateId } from '@/shared/utils';
 
 import styles from './AudioEditor.module.less';
@@ -168,6 +183,18 @@ function AudioEditor({
   const voiceAudioRefs = useRef<Map<string, HTMLAudioElement>>(new Map());
   const musicAudioRef = useRef<HTMLAudioElement | null>(null);
   const sfxAudioRefs = useRef<Map<string, HTMLAudioElement>>(new Map());
+
+  // TTS 状态
+  const [ttsSettingsOpen, setTtsSettingsOpen] = useState(false);
+  const [ttsConfig, setTtsConfig] = useState<TTSConfig>(DEFAULT_TTS_CONFIG);
+  const [ttsGenerateOpen, setTtsGenerateOpen] = useState(false);
+  const [ttsText, setTtsText] = useState('');
+  const [isGeneratingTts, setIsGeneratingTts] = useState(false);
+
+  const currentVoice = useMemo(() => {
+    const voices = TTS_VOICES[ttsConfig.provider] || [];
+    return voices.find((v) => v.id === ttsConfig.voice);
+  }, [ttsConfig.provider, ttsConfig.voice]);
 
   // ========== Effects ==========
   useEffect(() => {
@@ -621,6 +648,60 @@ function AudioEditor({
     }
   };
 
+  // ========== TTS 生成旁白 ==========
+  const handleGenerateTts = async () => {
+    if (!ttsText.trim()) {
+      message.warning('请输入旁白文本');
+      return;
+    }
+
+    setIsGeneratingTts(true);
+    try {
+      const result = await ttsService.synthesize({
+        text: ttsText.trim(),
+        config: {
+          provider: ttsConfig.provider,
+          voice: ttsConfig.voice,
+          speed: ttsConfig.speed,
+          pitch: ttsConfig.pitch,
+          volume: ttsConfig.volume,
+          format: 'audio-24khz-48kbitrate-mono-mp3',
+        },
+      });
+
+      const blob = new Blob([result.audio], { type: result.format || 'audio/mpeg' });
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      const duration = await new Promise<number>((resolve) => {
+        audio.onloadedmetadata = () => resolve(audio.duration);
+        audio.onerror = () => resolve(0);
+      });
+
+      const newTrack: VoiceTrack = {
+        id: generateId(),
+        name: `TTS旁白_${ttsText.trim().slice(0, 20)}${ttsText.trim().length > 20 ? '...' : ''}`,
+        filePath: '',
+        fileUrl: url,
+        duration,
+        startTime: 0,
+        volume: 80,
+        fadeIn: 0,
+        fadeOut: 0,
+        type: 'dubbing',
+      };
+
+      setVoiceTracks([...voiceTracks, newTrack]);
+      message.success('TTS 旁白生成成功，已添加到配音轨道');
+      setTtsGenerateOpen(false);
+      setTtsText('');
+    } catch (error) {
+      logger.error('TTS 生成失败:', error);
+      message.error(`TTS 生成失败: ${error instanceof Error ? error.message : '未知错误'}`);
+    } finally {
+      setIsGeneratingTts(false);
+    }
+  };
+
   // ========== 渲染组件 ==========
 
   // 配音轨道表格列
@@ -803,357 +884,441 @@ function AudioEditor({
   ];
 
   return (
-    <Card
-      title={
-        <Space>
-          <Volume2 />
-          <span>配音配乐编辑</span>
-        </Space>
-      }
-      className={styles.audioEditor}
-      extra={
-        <Space>
-          <Tooltip title="总音量">
-            <div className={styles.masterVolumeControl}>
-              <Volume2 />
-              <Slider
-                min={0}
-                max={100}
-                value={masterVolume}
-                onChange={setMasterVolume}
-                disabled={disabled}
-                className={styles.masterSlider}
-              />
-              <span>{masterVolume}%</span>
-            </div>
-          </Tooltip>
-        </Space>
-      }
-    >
-      <Tabs
-        activeKey={activeTab}
-        onChange={(key) => setActiveTab(key)}
-        items={[
-          {
-            key: 'voice',
-            label: (
-              <Space>
-                <Headphones />
-                <span>配音轨道</span>
-                <Tag color="blue">{voiceTracks.length}</Tag>
-              </Space>
-            ),
-            children: (
-              <div className={styles.tabContent}>
-                <div className={styles.toolbar}>
-                  <Space>
-                    <Button
-                      type="primary"
-                      icon={<MicOff />}
-                      onClick={isRecording ? handleStopRecording : handleStartRecording}
-                      danger={isRecording}
-                      disabled={disabled}
-                    >
-                      {isRecording ? `停止录音 (${formatTime(recordingTime)})` : '开始录音'}
-                    </Button>
-                    <Button icon={<Upload />} onClick={handleVoiceImport} disabled={disabled}>
-                      导入配音
-                    </Button>
-                  </Space>
-                </div>
-
-                {voiceTracks.length > 0 ? (
-                  <Table
-                    dataSource={voiceTracks as any}
-                    columns={voiceColumns as any}
-                    rowKey="id"
-                    size="small"
-                    pagination={false}
-                    className={styles.trackTable}
-                  />
-                ) : (
-                  <Empty image={undefined} description="暂无配音，点击上方按钮添加" />
-                )}
+    <>
+      <Card
+        title={
+          <Space>
+            <Volume2 />
+            <span>配音配乐编辑</span>
+          </Space>
+        }
+        className={styles.audioEditor}
+        extra={
+          <Space>
+            <Tooltip title="总音量">
+              <div className={styles.masterVolumeControl}>
+                <Volume2 />
+                <Slider
+                  min={0}
+                  max={100}
+                  value={masterVolume}
+                  onChange={setMasterVolume}
+                  disabled={disabled}
+                  className={styles.masterSlider}
+                />
+                <span>{masterVolume}%</span>
               </div>
-            ),
-          },
-          {
-            key: 'music',
-            label: (
-              <Space>
-                <Music />
-                <span>背景音乐</span>
-                {backgroundMusic && <Tag color="green">已添加</Tag>}
-              </Space>
-            ),
-            children: (
-              <div className={styles.tabContent}>
-                <div className={styles.musicSection}>
-                  {backgroundMusic ? (
-                    <Card className={styles.musicCard} size="small">
-                      <div className={styles.musicInfo}>
-                        <div className={styles.musicName}>{backgroundMusic.name}</div>
-                        <div className={styles.musicMeta}>
-                          <span>时长: {formatTime(backgroundMusic.duration)}</span>
-                          <span>
-                            循环:{' '}
-                            <Switch
-                              size="small"
-                              checked={backgroundMusic.loop}
-                              onChange={handleMusicLoopChange}
+            </Tooltip>
+          </Space>
+        }
+      >
+        <Tabs
+          activeKey={activeTab}
+          onChange={(key) => setActiveTab(key)}
+          items={[
+            {
+              key: 'voice',
+              label: (
+                <Space>
+                  <Headphones />
+                  <span>配音轨道</span>
+                  <Tag color="blue">{voiceTracks.length}</Tag>
+                </Space>
+              ),
+              children: (
+                <div className={styles.tabContent}>
+                  <div className={styles.toolbar}>
+                    <Space>
+                      <Button
+                        type="primary"
+                        icon={<MicOff />}
+                        onClick={isRecording ? handleStopRecording : handleStartRecording}
+                        danger={isRecording}
+                        disabled={disabled}
+                      >
+                        {isRecording ? `停止录音 (${formatTime(recordingTime)})` : '开始录音'}
+                      </Button>
+                      <Button icon={<Upload />} onClick={handleVoiceImport} disabled={disabled}>
+                        导入配音
+                      </Button>
+                      <Button
+                        icon={<AudioLines />}
+                        onClick={() => setTtsGenerateOpen(true)}
+                        disabled={disabled}
+                      >
+                        TTS 生成旁白
+                      </Button>
+                    </Space>
+                  </div>
+
+                  {voiceTracks.length > 0 ? (
+                    <Table
+                      dataSource={voiceTracks as any}
+                      columns={voiceColumns as any}
+                      rowKey="id"
+                      size="small"
+                      pagination={false}
+                      className={styles.trackTable}
+                    />
+                  ) : (
+                    <Empty image={undefined} description="暂无配音，点击上方按钮添加" />
+                  )}
+                </div>
+              ),
+            },
+            {
+              key: 'music',
+              label: (
+                <Space>
+                  <Music />
+                  <span>背景音乐</span>
+                  {backgroundMusic && <Tag color="green">已添加</Tag>}
+                </Space>
+              ),
+              children: (
+                <div className={styles.tabContent}>
+                  <div className={styles.musicSection}>
+                    {backgroundMusic ? (
+                      <Card className={styles.musicCard} size="small">
+                        <div className={styles.musicInfo}>
+                          <div className={styles.musicName}>{backgroundMusic.name}</div>
+                          <div className={styles.musicMeta}>
+                            <span>时长: {formatTime(backgroundMusic.duration)}</span>
+                            <span>
+                              循环:{' '}
+                              <Switch
+                                size="small"
+                                checked={backgroundMusic.loop}
+                                onChange={handleMusicLoopChange}
+                                disabled={disabled}
+                              />
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className={styles.musicControls}>
+                          <Button
+                            type="primary"
+                            icon={playingMusic ? <PauseCircle /> : <PlayCircle />}
+                            onClick={handleMusicPlay}
+                            disabled={disabled}
+                          >
+                            {playingMusic ? '暂停' : '播放'}
+                          </Button>
+                          <Popconfirm
+                            title="确认移除背景音乐?"
+                            onConfirm={handleMusicRemove}
+                            okText="确认"
+                            cancelText="取消"
+                          >
+                            <Button danger icon={<Trash2 />} disabled={disabled}>
+                              移除
+                            </Button>
+                          </Popconfirm>
+                        </div>
+
+                        <div className={styles.volumeControl}>
+                          <span>音量:</span>
+                          <Slider
+                            min={0}
+                            max={100}
+                            value={backgroundMusic.volume}
+                            onChange={handleMusicVolumeChange}
+                            disabled={disabled}
+                          />
+                          <span>{backgroundMusic.volume}%</span>
+                        </div>
+
+                        <div className={styles.fadeControl}>
+                          <div className={styles.fadeItem}>
+                            <span>淡入:</span>
+                            <Slider
+                              min={0}
+                              max={10}
+                              step={0.5}
+                              value={backgroundMusic.fadeIn}
+                              onChange={(value) =>
+                                setBackgroundMusic({ ...backgroundMusic, fadeIn: value })
+                              }
                               disabled={disabled}
                             />
-                          </span>
+                            <span>{backgroundMusic.fadeIn}s</span>
+                          </div>
+                          <div className={styles.fadeItem}>
+                            <span>淡出:</span>
+                            <Slider
+                              min={0}
+                              max={10}
+                              step={0.5}
+                              value={backgroundMusic.fadeOut}
+                              onChange={(value) =>
+                                setBackgroundMusic({ ...backgroundMusic, fadeOut: value })
+                              }
+                              disabled={disabled}
+                            />
+                            <span>{backgroundMusic.fadeOut}s</span>
+                          </div>
                         </div>
-                      </div>
-
-                      <div className={styles.musicControls}>
-                        <Button
-                          type="primary"
-                          icon={playingMusic ? <PauseCircle /> : <PlayCircle />}
-                          onClick={handleMusicPlay}
-                          disabled={disabled}
-                        >
-                          {playingMusic ? '暂停' : '播放'}
-                        </Button>
-                        <Popconfirm
-                          title="确认移除背景音乐?"
-                          onConfirm={handleMusicRemove}
-                          okText="确认"
-                          cancelText="取消"
-                        >
-                          <Button danger icon={<Trash2 />} disabled={disabled}>
-                            移除
+                      </Card>
+                    ) : (
+                      <div className={styles.musicSelectArea}>
+                        <div className={styles.selectButtons}>
+                          <Button
+                            type="primary"
+                            icon={<Folder />}
+                            onClick={handleMusicSelect}
+                            disabled={disabled}
+                            size="large"
+                          >
+                            选择本地音乐
                           </Button>
-                        </Popconfirm>
-                      </div>
-
-                      <div className={styles.volumeControl}>
-                        <span>音量:</span>
-                        <Slider
-                          min={0}
-                          max={100}
-                          value={backgroundMusic.volume}
-                          onChange={handleMusicVolumeChange}
-                          disabled={disabled}
-                        />
-                        <span>{backgroundMusic.volume}%</span>
-                      </div>
-
-                      <div className={styles.fadeControl}>
-                        <div className={styles.fadeItem}>
-                          <span>淡入:</span>
-                          <Slider
-                            min={0}
-                            max={10}
-                            step={0.5}
-                            value={backgroundMusic.fadeIn}
-                            onChange={(value) =>
-                              setBackgroundMusic({ ...backgroundMusic, fadeIn: value })
-                            }
-                            disabled={disabled}
-                          />
-                          <span>{backgroundMusic.fadeIn}s</span>
                         </div>
-                        <div className={styles.fadeItem}>
-                          <span>淡出:</span>
-                          <Slider
-                            min={0}
-                            max={10}
-                            step={0.5}
-                            value={backgroundMusic.fadeOut}
-                            onChange={(value) =>
-                              setBackgroundMusic({ ...backgroundMusic, fadeOut: value })
-                            }
-                            disabled={disabled}
-                          />
-                          <span>{backgroundMusic.fadeOut}s</span>
+
+                        <div className={styles.presetSection}>
+                          <div className={styles.presetTitle}>推荐背景音乐</div>
+                          <div className={styles.presetList}>
+                            {PRESET_BGM_LIST.map((bgm) => (
+                              <Tag
+                                key={bgm.id}
+                                className={styles.presetTag}
+                                onClick={() => message.info(`将使用预设音乐: ${bgm.name}`)}
+                              >
+                                {bgm.name}
+                                <span className={styles.presetMeta}>- {bgm.category}</span>
+                              </Tag>
+                            ))}
+                          </div>
                         </div>
                       </div>
-                    </Card>
+                    )}
+                  </div>
+                </div>
+              ),
+            },
+            {
+              key: 'effects',
+              label: (
+                <Space>
+                  <Volume2 />
+                  <span>音效</span>
+                  <Tag color="purple">{soundEffects.length}</Tag>
+                </Space>
+              ),
+              children: (
+                <div className={styles.tabContent}>
+                  <div className={styles.toolbar}>
+                    <Space>
+                      <Button icon={<Upload />} onClick={handleSfxImport} disabled={disabled}>
+                        导入音效
+                      </Button>
+                    </Space>
+                  </div>
+
+                  {soundEffects.length > 0 ? (
+                    <Table
+                      dataSource={soundEffects as any}
+                      columns={sfxColumns as any}
+                      rowKey="id"
+                      size="small"
+                      pagination={false}
+                      className={styles.trackTable}
+                    />
                   ) : (
-                    <div className={styles.musicSelectArea}>
-                      <div className={styles.selectButtons}>
-                        <Button
-                          type="primary"
-                          icon={<Folder />}
-                          onClick={handleMusicSelect}
-                          disabled={disabled}
-                          size="large"
-                        >
-                          选择本地音乐
-                        </Button>
-                      </div>
-
-                      <div className={styles.presetSection}>
-                        <div className={styles.presetTitle}>推荐背景音乐</div>
+                    <Empty image={undefined} description="暂无音效，点击上方按钮添加">
+                      <div className={styles.presetSfxSection}>
+                        <div className={styles.presetTitle}>预设音效分类</div>
                         <div className={styles.presetList}>
-                          {PRESET_BGM_LIST.map((bgm) => (
+                          {PRESET_SFX_LIST.map((sfx) => (
                             <Tag
-                              key={bgm.id}
+                              key={sfx.id}
                               className={styles.presetTag}
-                              onClick={() => message.info(`将使用预设音乐: ${bgm.name}`)}
+                              color="blue"
+                              onClick={() => message.info(`将使用预设音效: ${sfx.name}`)}
                             >
-                              {bgm.name}
-                              <span className={styles.presetMeta}>- {bgm.category}</span>
+                              {sfx.name}
                             </Tag>
                           ))}
                         </div>
                       </div>
-                    </div>
+                    </Empty>
                   )}
                 </div>
-              </div>
-            ),
-          },
-          {
-            key: 'effects',
-            label: (
-              <Space>
-                <Volume2 />
-                <span>音效</span>
-                <Tag color="purple">{soundEffects.length}</Tag>
-              </Space>
-            ),
-            children: (
-              <div className={styles.tabContent}>
-                <div className={styles.toolbar}>
-                  <Space>
-                    <Button icon={<Upload />} onClick={handleSfxImport} disabled={disabled}>
-                      导入音效
-                    </Button>
-                  </Space>
-                </div>
-
-                {soundEffects.length > 0 ? (
-                  <Table
-                    dataSource={soundEffects as any}
-                    columns={sfxColumns as any}
-                    rowKey="id"
-                    size="small"
-                    pagination={false}
-                    className={styles.trackTable}
-                  />
-                ) : (
-                  <Empty image={undefined} description="暂无音效，点击上方按钮添加">
-                    <div className={styles.presetSfxSection}>
-                      <div className={styles.presetTitle}>预设音效分类</div>
-                      <div className={styles.presetList}>
-                        {PRESET_SFX_LIST.map((sfx) => (
-                          <Tag
-                            key={sfx.id}
-                            className={styles.presetTag}
-                            color="blue"
-                            onClick={() => message.info(`将使用预设音效: ${sfx.name}`)}
-                          >
-                            {sfx.name}
-                          </Tag>
-                        ))}
-                      </div>
-                    </div>
-                  </Empty>
-                )}
-              </div>
-            ),
-          },
-          {
-            key: 'mix',
-            label: (
-              <Space>
-                <Settings />
-                <span>混音设置</span>
-              </Space>
-            ),
-            children: (
-              <div className={styles.tabContent}>
-                <Row gutter={[24, 24]}>
-                  <Col xs={24} sm={12} md={6}>
-                    <Card className={styles.mixCard} size="small">
-                      <div className={styles.mixTitle}>
-                        <Headphones /> 配音音量
-                      </div>
-                      <Progress percent={voiceVolume} status="active" />
-                      <Slider
-                        min={0}
-                        max={100}
-                        value={voiceVolume}
-                        onChange={setVoiceVolume}
-                        disabled={disabled}
-                      />
-                    </Card>
-                  </Col>
-                  <Col xs={24} sm={12} md={6}>
-                    <Card className={styles.mixCard} size="small">
-                      <div className={styles.mixTitle}>
-                        <Music /> 音乐音量
-                      </div>
-                      <Progress percent={musicVolume} status="active" />
-                      <Slider
-                        min={0}
-                        max={100}
-                        value={musicVolume}
-                        onChange={setMusicVolume}
-                        disabled={disabled}
-                      />
-                    </Card>
-                  </Col>
-                  <Col xs={24} sm={12} md={6}>
-                    <Card className={styles.mixCard} size="small">
-                      <div className={styles.mixTitle}>
-                        <Volume2 /> 音效音量
-                      </div>
-                      <Progress percent={effectVolume} status="active" />
-                      <Slider
-                        min={0}
-                        max={100}
-                        value={effectVolume}
-                        onChange={setEffectVolume}
-                        disabled={disabled}
-                      />
-                    </Card>
-                  </Col>
-                  <Col xs={24} sm={12} md={6}>
-                    <Card className={styles.mixCard} size="small">
-                      <div className={styles.mixTitle}>
-                        <span className={styles.masterIcon}>M</span> 主音量
-                      </div>
-                      <Progress percent={masterVolume} status="active" />
-                      <Slider
-                        min={0}
-                        max={100}
-                        value={masterVolume}
-                        onChange={setMasterVolume}
-                        disabled={disabled}
-                      />
-                    </Card>
-                  </Col>
-                </Row>
-
-                <Card className={styles.summaryCard} size="small" title="音频轨道概览">
-                  <Row gutter={[16, 12]}>
-                    <Col xs={24} sm={8}>
-                      <div className={styles.summaryItem}>
-                        <Headphones /> 配音轨道: <strong>{voiceTracks.length}</strong>
-                      </div>
+              ),
+            },
+            {
+              key: 'mix',
+              label: (
+                <Space>
+                  <Settings />
+                  <span>混音设置</span>
+                </Space>
+              ),
+              children: (
+                <div className={styles.tabContent}>
+                  <Row gutter={[24, 24]}>
+                    <Col xs={24} sm={12} md={6}>
+                      <Card className={styles.mixCard} size="small">
+                        <div className={styles.mixTitle}>
+                          <Headphones /> 配音音量
+                        </div>
+                        <Progress percent={voiceVolume} status="active" />
+                        <Slider
+                          min={0}
+                          max={100}
+                          value={voiceVolume}
+                          onChange={setVoiceVolume}
+                          disabled={disabled}
+                        />
+                      </Card>
                     </Col>
-                    <Col xs={24} sm={8}>
-                      <div className={styles.summaryItem}>
-                        <Music /> 背景音乐: <strong>{backgroundMusic ? '1' : '0'}</strong>
-                      </div>
+                    <Col xs={24} sm={12} md={6}>
+                      <Card className={styles.mixCard} size="small">
+                        <div className={styles.mixTitle}>
+                          <Music /> 音乐音量
+                        </div>
+                        <Progress percent={musicVolume} status="active" />
+                        <Slider
+                          min={0}
+                          max={100}
+                          value={musicVolume}
+                          onChange={setMusicVolume}
+                          disabled={disabled}
+                        />
+                      </Card>
                     </Col>
-                    <Col xs={24} sm={8}>
-                      <div className={styles.summaryItem}>
-                        <Volume2 /> 音效: <strong>{soundEffects.length}</strong>
-                      </div>
+                    <Col xs={24} sm={12} md={6}>
+                      <Card className={styles.mixCard} size="small">
+                        <div className={styles.mixTitle}>
+                          <Volume2 /> 音效音量
+                        </div>
+                        <Progress percent={effectVolume} status="active" />
+                        <Slider
+                          min={0}
+                          max={100}
+                          value={effectVolume}
+                          onChange={setEffectVolume}
+                          disabled={disabled}
+                        />
+                      </Card>
+                    </Col>
+                    <Col xs={24} sm={12} md={6}>
+                      <Card className={styles.mixCard} size="small">
+                        <div className={styles.mixTitle}>
+                          <span className={styles.masterIcon}>M</span> 主音量
+                        </div>
+                        <Progress percent={masterVolume} status="active" />
+                        <Slider
+                          min={0}
+                          max={100}
+                          value={masterVolume}
+                          onChange={setMasterVolume}
+                          disabled={disabled}
+                        />
+                      </Card>
                     </Col>
                   </Row>
-                </Card>
+
+                  <Card className={styles.summaryCard} size="small" title="音频轨道概览">
+                    <Row gutter={[16, 12]}>
+                      <Col xs={24} sm={8}>
+                        <div className={styles.summaryItem}>
+                          <Headphones /> 配音轨道: <strong>{voiceTracks.length}</strong>
+                        </div>
+                      </Col>
+                      <Col xs={24} sm={8}>
+                        <div className={styles.summaryItem}>
+                          <Music /> 背景音乐: <strong>{backgroundMusic ? '1' : '0'}</strong>
+                        </div>
+                      </Col>
+                      <Col xs={24} sm={8}>
+                        <div className={styles.summaryItem}>
+                          <Volume2 /> 音效: <strong>{soundEffects.length}</strong>
+                        </div>
+                      </Col>
+                    </Row>
+                  </Card>
+                </div>
+              ),
+            },
+          ]}
+        />
+      </Card>
+
+      {/* TTS 生成旁白对话框 */}
+      <Dialog open={ttsGenerateOpen} onOpenChange={setTtsGenerateOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AudioLines className="h-5 w-5" />
+              TTS 生成旁白
+            </DialogTitle>
+            <DialogDescription>输入旁白文本，使用当前 TTS 配置生成配音</DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label>旁白文本</Label>
+              <textarea
+                value={ttsText}
+                onChange={(e) => setTtsText(e.target.value)}
+                className="w-full min-h-[100px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                placeholder="输入要生成旁白的文本内容..."
+                rows={4}
+              />
+            </div>
+
+            <div className="rounded-lg border p-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">当前 TTS 配置</span>
+                <Button variant="ghost" size="sm" onClick={() => setTtsSettingsOpen(true)}>
+                  <Settings2 className="h-3 w-3 mr-1" />
+                  更改设置
+                </Button>
               </div>
-            ),
-          },
-        ]}
+              <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+                <span>
+                  服务商: {ttsConfig.provider === 'edge' ? 'Edge TTS（免费）' : ttsConfig.provider}
+                </span>
+                <span>
+                  音色:{' '}
+                  {currentVoice
+                    ? `${currentVoice.name}（${currentVoice.gender === 'female' ? '女声' : '男声'}）`
+                    : ttsConfig.voice}
+                </span>
+                <span>语速: {ttsConfig.speed.toFixed(1)}x</span>
+                <span>音调: {ttsConfig.pitch.toFixed(1)}x</span>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setTtsGenerateOpen(false)}>
+              取消
+            </Button>
+            <Button onClick={handleGenerateTts} disabled={isGeneratingTts || !ttsText.trim()}>
+              {isGeneratingTts ? (
+                <>
+                  <Loader className="h-4 w-4 mr-1 animate-spin" />
+                  生成中...
+                </>
+              ) : (
+                <>
+                  <AudioLines className="h-4 w-4 mr-1" />
+                  生成并添加到轨道
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <TtsSettings
+        open={ttsSettingsOpen}
+        onOpenChange={setTtsSettingsOpen}
+        config={ttsConfig}
+        onSave={setTtsConfig}
       />
-    </Card>
+    </>
   );
 }
 

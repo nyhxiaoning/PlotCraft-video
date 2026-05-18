@@ -61,6 +61,7 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "dayjs": "^1.11.10",
+    "edge-tts-universal": "^1.4.0",
     "file-saver": "^2.0.5",
     "framer-motion": "^12.10.3",
     "i18next": "^25.0.1",

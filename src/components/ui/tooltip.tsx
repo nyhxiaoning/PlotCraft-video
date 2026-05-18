@@ -32,7 +32,7 @@ const TooltipWithTitle = React.forwardRef<
 TooltipWithTitle.displayName = 'TooltipWithTitle';
 
 // Tooltip as a switcher component that handles both patterns
-// If title is provided, use wrapper pattern; otherwise passthrough children
+// If title is provided, use wrapper pattern; otherwise render Root for Radix composition
 const TooltipSwitcher = ({ title, children, ...props }: TooltipProps) => {
   if (title) {
     return (
@@ -47,8 +47,8 @@ const TooltipSwitcher = ({ title, children, ...props }: TooltipProps) => {
       </TooltipPrimitive.Root>
     );
   }
-  // Passthrough - just render children (parent will handle tooltip structure)
-  return <>{children}</>;
+  // Render Root wrapper so TooltipTrigger/TooltipContent composition works
+  return <TooltipPrimitive.Root {...props}>{children}</TooltipPrimitive.Root>;
 };
 
 const TooltipContent = React.forwardRef<

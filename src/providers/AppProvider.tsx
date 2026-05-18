@@ -1,5 +1,6 @@
 import React, { ReactNode } from 'react';
 
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { SettingsProvider } from '@/context/SettingsContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 
@@ -14,7 +15,9 @@ interface AppProviderProps {
 function AppProvider({ children }: AppProviderProps) {
   return (
     <ThemeProvider>
-      <SettingsProvider>{children}</SettingsProvider>
+      <SettingsProvider>
+        <TooltipProvider delayDuration={300}>{children}</TooltipProvider>
+      </SettingsProvider>
     </ThemeProvider>
   );
 }
